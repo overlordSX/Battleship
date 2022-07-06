@@ -2,8 +2,9 @@
 
 class Database
 {
-    protected static Database $_instance;
+    protected static ?Database $_instance = null;
 
+    protected PDO $pdo;
 
     public static function getInstance(): Database
     {
@@ -14,13 +15,14 @@ class Database
         return self::$_instance;
     }
 
+    protected function getPdo(): PDO
+    {
+        return $this->pdo;
+    }
+
     private function __construct()
     {
-        $host = '192.168.0.2';
-        $db = 'tdb_oloviev';
-        $user = 'dbu_oloviev';
-        $pass = 'li3ot3uo';
-        $charset = 'utf8';
+        require "config.php";
 
         $dsn = "mysql:host=$host; dbname=$db; charset=$charset";
 
@@ -29,14 +31,37 @@ class Database
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
         ];
-        return new PDO($dsn, $user, $pass, $opt);
+
+        try {
+            $this->pdo = new PDO($dsn, $user, $pass, $opt);
+        } catch (Exception $exception) {
+            error_log($exception->getMessage().PHP_EOL, 3, $_SERVER['DOCUMENT_ROOT'].'/connection-error.log');
+            header('Location: .templates/error-500.php');
+            die();
+        }
+
     }
+
+    public static function query($sql): bool|PDOStatement
+    {
+        return self::$_instance->query($sql);
+    }
+
+    public static function queryFetchAll($sql): bool|array
+    {
+        return static::getInstance()->getPdo()->query($sql)->fetchAll();
+    }
+
+    public static function exec($sql): bool|int
+    {
+        return static::getInstance()->getPdo()->exec($sql);
+    }
+
 
     private function __clone()
     {
     }
 
-    //TODO #1 тут вопрос, в статье было private, но при запуске оно говорило что нужен public
     public function __wakeup()
     {
     }
