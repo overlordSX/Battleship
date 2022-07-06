@@ -8,10 +8,10 @@
 
 
 <?php
-include("database/connection.php");
+require_once "database/Database.php";
+
+Database::getInstance();
 ?>
-
-
 
 
 </body>
