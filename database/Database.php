@@ -22,7 +22,7 @@ class Database
 
     private function __construct()
     {
-        require "config.php";
+        require "config/config.php";
 
         $dsn = "mysql:host=$host; dbname=$db; charset=$charset";
 
@@ -35,7 +35,7 @@ class Database
         try {
             $this->pdo = new PDO($dsn, $user, $pass, $opt);
         } catch (Exception $exception) {
-            error_log($exception->getMessage().PHP_EOL, 3, $_SERVER['DOCUMENT_ROOT'].'/connection-error.log');
+            error_log($exception->getMessage().PHP_EOL, 3, $_SERVER['DOCUMENT_ROOT'].'logs/connection-error.log');
             header('Location: .templates/error-500.php');
             die();
         }
@@ -57,6 +57,24 @@ class Database
         return static::getInstance()->getPdo()->exec($sql);
     }
 
+    public static function prepareAndExecute($sql, $values = null): bool
+    {
+        return static::getInstance()->getPdo()->prepare($sql)->execute($values);
+    }
+
+    public static function preparePdoSet($allowed, &$values, $source = array()): string
+    {
+        $set = '';
+        $values = array();
+        if (!$source) $source = &$_POST;
+        foreach ($allowed as $field) {
+            if (isset($source[$field])) {
+                $set.="`".str_replace("`","``",$field)."`". "=:$field, ";
+                $values[$field] = $source[$field];
+            }
+        }
+        return substr($set, 0, -2);
+    }
 
     private function __clone()
     {
