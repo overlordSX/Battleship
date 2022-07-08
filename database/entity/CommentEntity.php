@@ -11,7 +11,8 @@ class CommentEntity
         protected string $email,
         protected string $comment,
         protected int $product_id,
-        protected ?int $id
+        protected ?int $id,
+        protected bool $activity_status = false
     ) { }
 
     public function getId(): int
