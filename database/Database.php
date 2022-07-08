@@ -42,9 +42,9 @@ class Database
 
     }
 
-    public static function query($sql): bool|PDOStatement
+    public static function queryFetchRow($sql)
     {
-        return self::$_instance->query($sql);
+        return self::$_instance->getPdo()->query($sql)->fetch();
     }
 
     public static function queryFetchAll($sql): bool|array
