@@ -7,6 +7,8 @@ require_once "database/Database.php";
 
 Router::route(['/'], function () {
     echo "<br><a href='/catalog'><button>Каталог</button></a>";
+    echo "<br><a href='/catalog/create'><button>Создать таблицу Товары</button></a>";
+    echo "<br><a href='/catalog/drop'><button>Удалить таблицу Товары</button></a>";
 });
 Router::route(['/about'], function () {
     echo "<h1>I'm Andrew</h1>";
