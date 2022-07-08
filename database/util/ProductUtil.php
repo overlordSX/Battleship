@@ -2,6 +2,11 @@
 
 class ProductUtil
 {
+
+    /**
+     * @param $array
+     * @return ProductEntity[]
+     */
     public static function resultToListOfProducts($array): array
     {
         $listOfProducts = [];
