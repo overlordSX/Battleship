@@ -5,8 +5,6 @@
  */
 class Products
 {
-    //TODO №9 по сути можно сделать приватный конструктор,
-    // чтобы нельзя было создать объект, так как все через статические функции работает
 
     public static function createTable(): void
     {
@@ -21,6 +19,9 @@ class Products
         Database::exec($createTableQuery);
     }
 
+    /**
+     * @return ProductEntity[] возвращает массив объктов
+     */
     public static function selectAllProducts(): array
     {
         require_once "util/ProductUtil.php";
@@ -28,13 +29,30 @@ class Products
         $selectAllQuery = "select * from products;";
         $result = Database::queryFetchAll($selectAllQuery);
 
-        //по итогу в резалте список объектов ProductEntity
-        $result = ProductUtil::resultToListOfProducts($result);
+        return ProductUtil::resultToListOfProducts($result);
+    }
 
-        //TODO функция по сути должна возвращать список объектов ProductUtil,
-        //TODO их далее будет юзать контроллер, чтобы рисовать вью.
-        print_r($result);
-        return $result;
+    /**
+     * @param int $limit сколько записей взять
+     * @param int $offset начиная с какой записи
+     * @return ProductEntity[] вернет массив объектов
+     */
+    public static function selectProductsLimitOffset(int $limit, int $offset = 0): array
+    {
+        require_once "util/ProductUtil.php";
+
+        $selectLimitOffsetQuery = "select * from products LIMIT $limit OFFSET $offset;";
+        $result = Database::queryFetchAll($selectLimitOffsetQuery);
+
+        return ProductUtil::resultToListOfProducts($result);
+
+    }
+
+    public static function getCountOfProducts(): int
+    {
+        $getCountOfProductsQuery = "select COUNT(*) as totalProducts from products";
+        return Database::queryFetchRow($getCountOfProductsQuery)['totalProducts'];
+
     }
 
     public static function insertNewProduct(ProductEntity $product): void
@@ -49,6 +67,13 @@ class Products
                 $product->getPrice()
             ]);
     }
+
+    public static function dropTable(): void
+    {
+        $dropTableQuery = "drop table if exists products";
+        Database::exec($dropTableQuery);
+    }
+
 }
 
 
