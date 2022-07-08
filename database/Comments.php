@@ -22,6 +22,9 @@ class Comments
         Database::exec($createTableQuery);
     }
 
+    /**
+     * @return ProductEntity[] возвращает список объектов
+     */
     public static function selectAllComments(): array
     {
         require_once "util/ProductUtil.php";
@@ -29,18 +32,13 @@ class Comments
         $selectAllQuery = "select * from comments;";
         $result = Database::queryFetchAll($selectAllQuery);
 
-        //по итогу в резалте список объектов ProductEntity
-        $result = CommentUtil::resultToListOfProducts($result);
-
-        //TODO их далее будет юзать контроллер, чтобы рисовать вью.
-        print_r($result);
-        return $result;
+        return CommentUtil::resultToListOfProducts($result);
     }
 
     public static function insertNewComment(CommentEntity $comment): void
     {
-        //TODO №424 не понятно где именно нужно будет делать валидацию
-        //TODO #232 так же тут где то нужно будет делать проверку на то что такой продукт существует
+        //TODO №5 не понятно где именно нужно будет делать валидацию
+        //TODO #6 так же тут где то нужно будет делать проверку на то что такой продукт существует
         $insertQuery = "insert into comments (email, comment, product_id) values (?, ?, ?)";
         Database::prepareAndExecute(
             $insertQuery,
