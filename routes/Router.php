@@ -19,12 +19,16 @@ class Router
 
 
     /**
-     * @param $pattern string шаблон url-адреса
+     * @param array $patternArray массив шаблонов url адреса
      * @param $callback callable функция, которая будет соответствовать этому шаблону
      */
-    public static function route(string $pattern, callable $callback): void
+    public static function route(array $patternArray, callable $callback): void
     {
-        $pattern = '/^' . str_replace('/', '\/', $pattern) . '$/';
+        foreach ($patternArray as $pattern) {
+            $pattern = '/^' . str_replace('/', '\/', $pattern) . '$/';
+            self::$routes[$pattern] = $callback;
+        }
+        //$pattern = '/^' . str_replace('/', '\/', $pattern) . '$/';
         self::$routes[$pattern] = $callback;
     }
 
@@ -35,11 +39,16 @@ class Router
      */
     public static function execute(string $url)
     {
+        $found = false;
         foreach (self::$routes as $pattern => $callback) {
             if (preg_match($pattern, $url, $params)) {
                 array_shift($params);
                 return call_user_func_array($callback, array_values($params));
             }
+        }
+        if (!$found) {
+            header('Location: /templates/error-404.php');
+            die();
         }
     }
 
