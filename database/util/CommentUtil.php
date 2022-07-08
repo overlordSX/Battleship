@@ -2,6 +2,11 @@
 
 class CommentUtil
 {
+    //TODO #4 тут нет поля статуса активности
+    /**
+     * @param $array
+     * @return CommentEntity[]
+     */
     public static function resultToListOfComments($array): array
     {
         $listOfComments = [];
