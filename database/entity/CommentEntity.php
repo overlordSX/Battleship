@@ -4,16 +4,29 @@
 /**
  * Класс описывающий сущность отзыва
  */
-class CommentEntity
+class CommentEntity extends AbstractEntity
 {
 
-    public function __construct(
-        protected string $email,
-        protected string $comment,
-        protected int $product_id,
-        protected ?int $id,
-        protected bool $activity_status = false
-    ) { }
+    protected string $email;
+    protected string $comment;
+    protected int $product_id;
+    protected ?int $id;
+    protected bool $activity_status = false;
+
+    public function __construct($data)
+    {
+        $this->email = $data['email'];
+        $this->comment = $data['comment'];
+        $this->product_id = $data['product_id'];
+        if ($data['id'] !== null) {
+            $this->id = $data['id'];
+        } else {
+            $this->id = null;
+        }
+        if (isset($data['activity_status'])) {
+            $this->activity_status = $data['activity_status'];
+        }
+    }
 
     public function getId(): int
     {
