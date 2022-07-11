@@ -14,7 +14,7 @@ Router::route(['/catalog/page/(\d+)'], function (int $pageNumber) {
     CatalogController::renderPage($pageNumber);
 });
 
-Router::route(['error-404'], function () {
+Router::route(['/error-404'], function () {
     require_once "templates/error-404.php";
 });
 
