@@ -5,7 +5,7 @@
  */
 class Router
 {
-    //хранит маршруты, маршруту соотвествует фукнция
+    //хранит маршруты, маршруту соотвествует функция
     private static array $routes = array();
 
     //запрет на создание и клонирование
@@ -20,7 +20,7 @@ class Router
 
     /**
      * @param array $patternArray массив шаблонов url адреса
-     * @param $callback callable функция, которая будет соответствовать этому шаблону
+     * @param callable $callback функция, которая будет соответствовать этому шаблону
      */
     public static function route(array $patternArray, callable $callback): void
     {
@@ -28,13 +28,12 @@ class Router
             $pattern = '/^' . str_replace('/', '\/', $pattern) . '$/';
             self::$routes[$pattern] = $callback;
         }
-        //$pattern = '/^' . str_replace('/', '\/', $pattern) . '$/';
         self::$routes[$pattern] = $callback;
     }
 
 
     /**
-     * @param $url string заправшиваемый url
+     * @param string $url заправшиваемый url
      * @return mixed|void
      */
     public static function execute(string $url)
@@ -47,7 +46,7 @@ class Router
             }
         }
         if (!$found) {
-            header('Location: /templates/error-404.php');
+            header('Location: /error-404');
             die();
         }
     }
