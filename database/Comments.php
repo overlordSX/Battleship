@@ -12,6 +12,7 @@ class Comments
         (`id` INT NOT NULL AUTO_INCREMENT, 
         `email` VARCHAR(200) NOT NULL,
         `comment` VARCHAR(500) NOT NULL,
+        `activity_status` BOOL NOT NULL default false, 
         `product_id` INT NOT NULL,
         PRIMARY KEY (`id`),
         FOREIGN KEY (`product_id`) 
@@ -23,16 +24,14 @@ class Comments
     }
 
     /**
-     * @return ProductEntity[] возвращает список объектов
+     * @return CommentEntity[] возвращает список объектов
      */
     public static function selectAllComments(): array
     {
-        require_once "util/ProductUtil.php";
-
         $selectAllQuery = "select * from comments;";
         $result = Database::queryFetchAll($selectAllQuery);
 
-        return CommentUtil::resultToListOfProducts($result);
+        return EntityUtil::resultToListOfEntities("CommentEntity", $result);
     }
 
     public static function insertNewComment(CommentEntity $comment): void
