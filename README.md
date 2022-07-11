@@ -16,4 +16,4 @@
 
     Для того чтобы подключить БД нужно:
     создать файл config.php, по примеру configExample.php
-    в директории /database/
+    в директории /database/config
