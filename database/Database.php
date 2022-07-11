@@ -22,9 +22,10 @@ class Database
 
     private function __construct()
     {
-        require "config/config.php";
+        global $dbHost, $dbName, $dbCharset, $dbUser, $dbPass;
 
-        $dsn = "mysql:host=$host; dbname=$db; charset=$charset";
+
+        $dsn = "mysql:host=$dbHost; dbname=$dbName; charset=$dbCharset";
 
         $opt = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -33,10 +34,14 @@ class Database
         ];
 
         try {
-            $this->pdo = new PDO($dsn, $user, $pass, $opt);
+            $this->pdo = new PDO($dsn, $dbUser, $dbPass, $opt);
         } catch (Exception $exception) {
-            error_log($exception->getMessage().PHP_EOL, 3, $_SERVER['DOCUMENT_ROOT'].'logs/connection-error.log');
-            header('Location: .templates/error-500.php');
+            error_log(
+                $exception->getMessage() . PHP_EOL,
+                3,
+                $_SERVER['DOCUMENT_ROOT'] . '/logs/connection-error.log'
+            );
+            header('Location: /templates/error-500.php');
             die();
         }
 
@@ -44,7 +49,7 @@ class Database
 
     public static function queryFetchRow($sql)
     {
-        return self::$_instance->getPdo()->query($sql)->fetch();
+        return self::getInstance()->getPdo()->query($sql)->fetch();
     }
 
     public static function queryFetchAll($sql): bool|array
@@ -69,7 +74,7 @@ class Database
         if (!$source) $source = &$_POST;
         foreach ($allowed as $field) {
             if (isset($source[$field])) {
-                $set.="`".str_replace("`","``",$field)."`". "=:$field, ";
+                $set .= "`" . str_replace("`", "``", $field) . "`" . "=:$field, ";
                 $values[$field] = $source[$field];
             }
         }
