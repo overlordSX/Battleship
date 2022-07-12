@@ -6,7 +6,6 @@
  */
 class CommentEntity extends AbstractEntity
 {
-
     protected string $email;
     protected string $comment;
     protected int $product_id;
@@ -15,14 +14,14 @@ class CommentEntity extends AbstractEntity
 
     public function __construct($data)
     {
-        $this->email = $data['email'];
-        $this->comment = $data['comment'];
+        $this->email      = $data['email'];
+        $this->comment    = $data['comment'];
         $this->product_id = $data['product_id'];
-        if ($data['id'] !== null) {
-            $this->id = $data['id'];
-        } else {
-            $this->id = null;
-        }
+
+        $this->id = $data['id'] ?? null;
+
+        //todo подправить
+        //$this->activity_status = $data['activity_status'] ??
         if (isset($data['activity_status'])) {
             $this->activity_status = $data['activity_status'];
         }
@@ -48,4 +47,13 @@ class CommentEntity extends AbstractEntity
         return $this->product_id;
     }
 
+    public function getActivityStatus(): mixed
+    {
+        return $this->activity_status;
+    }
+
+    public function getQuantityOfComments(): int
+    {
+        return $this->quantityOfComments;
+    }
 }
