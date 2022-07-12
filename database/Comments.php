@@ -34,6 +34,29 @@ class Comments
         return EntityUtil::resultToListOfEntities("CommentEntity", $result);
     }
 
+    public static function getCountOfComments($productId): int
+    {
+        $getCountOfProductsQuery = "select COUNT(*) as totalComments from comments where product_id = $productId";
+        return Database::queryFetchRow($getCountOfProductsQuery)['totalComments'];
+    }
+
+    //todo #1 добавить потом вывод только промодерированных отзывов
+    public static function selectAllCommentsWithProductId($productId): array
+    {
+        $selectAllQuery = "select * from comments where product_id = $productId;";
+        $result = Database::queryFetchAll($selectAllQuery);
+
+        return EntityUtil::resultToListOfEntities("CommentEntity", $result);
+    }
+
+    public static function selectAllCommentsWithProductIdLimitOffset($productId, $limit, $offset): array
+    {
+        $selectAllQuery = "select * from comments where product_id = $productId limit $limit offset $offset;";
+        $result = Database::queryFetchAll($selectAllQuery);
+
+        return EntityUtil::resultToListOfEntities("CommentEntity", $result);
+    }
+
     public static function insertNewComment(CommentEntity $comment): void
     {
         //TODO №5 не понятно где именно нужно будет делать валидацию
@@ -46,5 +69,11 @@ class Comments
                 $comment->getComment(),
                 $comment->getProductId()
             ]);
+    }
+
+    public static function dropTable(): void
+    {
+        $dropTableQuery = "drop table if exists comments";
+        Database::exec($dropTableQuery);
     }
 }
