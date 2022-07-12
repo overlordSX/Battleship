@@ -18,3 +18,5 @@ require_once "database/Database.php";
 require_once "view/View.php";
 
 require_once "controllers/CatalogController.php";
+require_once "controllers/ProductController.php";
+require_once "controllers/CommentController.php";
