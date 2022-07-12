@@ -11,6 +11,7 @@ class ProductEntity extends AbstractEntity
     protected string $description;
     protected int $price;
     protected ?int $id;
+    protected int $quantityOfComments = 0;
 
     public function __construct($data)
     {
@@ -21,6 +22,9 @@ class ProductEntity extends AbstractEntity
             $this->id = $data['id'];
         } else {
             $this->id = null;
+        }
+        if (isset($data['quantityOfComments'])) {
+            $this->quantityOfComments = $data['quantityOfComments'];
         }
     }
 
@@ -42,6 +46,11 @@ class ProductEntity extends AbstractEntity
     public function getPrice(): int
     {
         return $this->price;
+    }
+
+    public function getQuantityOfComments(): mixed
+    {
+        return $this->quantityOfComments;
     }
 
 }
