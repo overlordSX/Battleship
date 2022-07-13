@@ -18,14 +18,10 @@ class ProductEntity extends AbstractEntity
         $this->name = $data['name'];
         $this->description = $data['description'];
         $this->price = $data['price'];
-        if ($data['id'] !== null) {
-            $this->id = $data['id'];
-        } else {
-            $this->id = null;
-        }
-        if (isset($data['quantityOfComments'])) {
-            $this->quantityOfComments = $data['quantityOfComments'];
-        }
+
+        $this->id = $data['id'] !== null ? $data['id'] : null;
+
+        $this->quantityOfComments = $data['comments'] ?? 0;
     }
 
     public function getId(): int
