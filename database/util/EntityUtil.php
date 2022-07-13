@@ -16,4 +16,9 @@ class EntityUtil
 
         return $listOfEntities;
     }
+
+    public static function resultToEntity($classname, $row): AbstractEntity
+    {
+        return new $classname($row);
+    }
 }
