@@ -4,47 +4,50 @@
  * @var int $countOfPages Количество страниц товаров
  * @var int $currentPageNumber Номер текущей страницы
  * @var string $currentUrl Ссылка текущей страницы
+ * @var array $query
  */
 
-$paginationArray['1'] = $currentUrl . "/page/1";
+
+$query['page'] = 1;
+$paginationArray['1'] = $currentUrl . '?' . http_build_query($query);
 if ($countOfPages > 1) {
-    $paginationArray['2'] = $currentUrl . "/page/2";
+    $query['page'] = 2;
+    $paginationArray['2'] = $currentUrl . '?' . http_build_query($query);
     for ($pageNumber = 1; $pageNumber < $countOfPages; $pageNumber++) {
         if (abs($currentPageNumber - $pageNumber) < 2) {
-            $paginationArray[$pageNumber . ""] = $currentUrl . "/page/" . $pageNumber;
+            $query['page'] = $pageNumber;
+            $paginationArray[$pageNumber . ""] = $currentUrl . '?' . http_build_query($query);
         }
     }
-    $paginationArray[$countOfPages - 1 . ""] = $currentUrl . "/page/" . $countOfPages - 1;
-    $paginationArray[$countOfPages . ""] = $currentUrl . "/page/" . $countOfPages;
+    $query['page'] = $countOfPages - 1;
+    $paginationArray[$countOfPages - 1 . ""] = $currentUrl . '?' . http_build_query($query);
+    $query['page'] = $countOfPages;
+    $paginationArray[$countOfPages . ""] = $currentUrl . '?' . http_build_query($query);
 
     ksort($paginationArray);
 }
-
 ?>
 
 <div class="col">
     <div class="btn-toolbar" role="toolbar">
         <div class="btn-group me-2" role="group">
-            <?php
-
+            <?
             $prevPage = '1';
-            foreach ($paginationArray
-
-            as $pageNumber => $link) {
+            foreach ($paginationArray as $pageNumber => $link) {
             if ($pageNumber - $prevPage > 1) { ?>
         </div>
         <div class="btn-group me-2" role="group">
-            <?php
+            <?
             }
             $prevPage = $pageNumber;
 
             if ($pageNumber == $currentPageNumber) {
                 ?>
                 <button type="button" class="btn btn-secondary" disabled><?= $currentPageNumber ?></button>
-                <?php
+                <?
             } else { ?>
-                <a href="/<?= $link ?>" class="btn btn-outline-primary" role="button"><?= $pageNumber ?></a>
-                <?php
+                <a href="/<?= $link?>" class="btn btn-outline-primary" role="button"><?= $pageNumber ?></a>
+                <?
             }
             } ?>
         </div>
