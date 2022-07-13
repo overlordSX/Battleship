@@ -1,9 +1,10 @@
-<?php
+<?
 /**
  * @var CommentEntity[] $commentsList
  * @var int $productId
  * @var int $commentPage
  * @var int $totalPages
+ * @var array $query
  */
 ?>
 <hr>
@@ -38,7 +39,7 @@
     <div class="card">
         <div class="card-body">
             <div class="row row-cols-2">
-                <?php
+                <?
                 /**
                  * @var CommentEntity[] $productList
                  * @var CommentEntity $comments
@@ -57,20 +58,18 @@
                 <? endforeach; ?>
             </div>
 
-            <?php
-            $commentsPaginationView = new View();
-            $commentsPaginationView->generateView(
+            <?
+            View::generateView(
                 'view/pagination/pagination.php',
                 [
                     'countOfPages' => $totalPages,
                     'currentPageNumber' => $commentPage,
-                    'currentUrl' => 'catalog/product/' . $productId . "/comments"
+                    'currentUrl' => 'catalog/product/' . $productId . "/comments",
+                    'query' => $query
                 ]
             );
 
             ?>
         </div>
     </div>
-
-
 </div>
