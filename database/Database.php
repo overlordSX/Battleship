@@ -24,8 +24,8 @@ class Database
     {
         global $dbHost, $dbName, $dbCharset, $dbUser, $dbPass;
 
-
-        $dsn = "mysql:host=$dbHost; dbname=$dbName; charset=$dbCharset";
+        $dsnFormat = 'mysql:host=%s; dbname=%s; charset=%s';
+        $dsn = sprintf($dsnFormat, $dbHost, $dbName, $dbCharset);
 
         $opt = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -36,25 +36,37 @@ class Database
         try {
             $this->pdo = new PDO($dsn, $dbUser, $dbPass, $opt);
         } catch (Exception $exception) {
+            //todo #1 добавить проверку на создание файла, и директории под него
             error_log(
                 $exception->getMessage() . PHP_EOL,
                 3,
                 $_SERVER['DOCUMENT_ROOT'] . '/logs/connection-error.log'
             );
-            header('Location: /templates/error-500.php');
+            header('Location: /error-500');
             die();
         }
 
     }
 
-    public static function queryFetchRow($sql)
+    public static function queryFetchRow($sql, $values = null)
     {
-        return self::getInstance()->getPdo()->query($sql)->fetch();
+        //todo #2 почему такой вариант не работает?
+        //static::getInstance()->getPdo()->prepare($sql)->execute($values)->fetch();
+
+        $pdo = static::getInstance()->getPdo();
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($values);
+
+        return $stmt->fetch();
     }
 
-    public static function queryFetchAll($sql): bool|array
+    public static function queryFetchAll($sql, $values = null): bool|array
     {
-        return static::getInstance()->getPdo()->query($sql)->fetchAll();
+        $pdo = static::getInstance()->getPdo();
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($values);
+
+        return $stmt->fetchAll();
     }
 
     public static function exec($sql): bool|int
@@ -65,20 +77,6 @@ class Database
     public static function prepareAndExecute($sql, $values = null): bool
     {
         return static::getInstance()->getPdo()->prepare($sql)->execute($values);
-    }
-
-    public static function preparePdoSet($allowed, &$values, $source = array()): string
-    {
-        $set = '';
-        $values = array();
-        if (!$source) $source = &$_POST;
-        foreach ($allowed as $field) {
-            if (isset($source[$field])) {
-                $set .= "`" . str_replace("`", "``", $field) . "`" . "=:$field, ";
-                $values[$field] = $source[$field];
-            }
-        }
-        return substr($set, 0, -2);
     }
 
     private function __clone()
