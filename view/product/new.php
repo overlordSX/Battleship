@@ -1,6 +1,5 @@
-<?php
-$headerView = new View();
-$headerView->generateView(
+<?
+View::generateView(
     'view/layouts/header.php',
     ['title' => "Форма добалвения товара"]
 );
@@ -8,7 +7,7 @@ $headerView->generateView(
 
     <div class="container">
         <div class="row">
-            <form action="/catalog/product/new" method="post">
+            <form action="" method="post">
                 <div class="row-3">
                     <input type=" text" name="name" placeholder="Название товара" maxlength="200">
                 </div>
@@ -27,9 +26,8 @@ $headerView->generateView(
     </div>
 
 
-<?php
-$footerView = new View();
-$footerView->generateView(
+<?
+View::generateView(
     'view/layouts/footer.php'
 );
 ?>
