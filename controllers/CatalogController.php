@@ -4,69 +4,92 @@ class CatalogController
 {
     public const PAGE_SIZE = 5;
 
-    public static function renderPage($pageUrl, $currentPageNumber = 1, $sortParam = "", $order = 'asc'): void
+    public static function renderPage2($pageUrl): void
     {
-        //todo №1 что делать с тем когда таблицы нет
-        Products::createTable();
-        Comments::createTable();
-        $productList = [];
-        $totalProducts = Products::getCountOfProducts();
-        $offset = ($currentPageNumber - 1) * self::PAGE_SIZE;
-        if ($sortParam !== "") {
-            if ($sortParam === 'name') {
-                $productList = Products::selectProductsWithQuantityOfCommentsSortByNameLimitOffset(
-                    self::PAGE_SIZE,
-                    $offset,
-                    $order
-                );
-            } elseif ($sortParam === 'price') {
-                $productList = Products::selectProductsWithQuantityOfCommentsSortByPriceLimitOffset(
-                    self::PAGE_SIZE,
-                    $offset,
-                    $order
-                );
-            } elseif ($sortParam === 'comments') {
-                echo " comments ";
-                $productList = Products::selectProductsWithQuantityOfCommentsSortByCommentsLimitOffset(
-                    self::PAGE_SIZE,
-                    $offset,
-                    $order
-                );
+        $parse = parse_url($pageUrl);
+        $start = $parse['query'] ?? '';
+        parse_str($start, $query);
+
+        $currentPageNumber = $query['page'] ?? 1;
+        $sortParam = $query['sortBy'] ?? "id";
+        $order = $query['order'] ?? 'asc';
+
+        try {
+            //todo #1 сделать 500 ошибку когда таблицы не созданы
+            $totalProducts = Products::getCountOfProducts();
+            $countOfPages = ceil($totalProducts / self::PAGE_SIZE);
+
+            if ($currentPageNumber > $countOfPages and $countOfPages > 0) {
+                header('Location: /error-404');
             }
-        } else {
-            $productList = Products::selectProductsWithQuantityOfCommentsLimitOffset(
+
+            $offset = ($currentPageNumber - 1) * self::PAGE_SIZE;
+
+            $productList = Products::getProductsWithQuantityOfCommentsWithSort(
                 self::PAGE_SIZE,
-                $offset
+                $offset,
+                $sortParam,
+                $order
             );
+
+            View::generateView('./view/catalog/catalog.php',
+                [
+                    'productList' => $productList,
+                    'currentPageNumber' => $currentPageNumber,
+                    'totalProducts' => $totalProducts,
+                    'countOfPages' => $countOfPages,
+                    'pageUrl' => 'catalog',
+                    'query' => $query
+                ]
+            );
+
+        } catch (Exception $exception) {
+            //todo #1 добавить проверку на создание файла, и директории под него НУЖНО ЛИ?
+            error_log(
+                $exception->getMessage() . PHP_EOL,
+                3,
+                $_SERVER['DOCUMENT_ROOT'] . '/logs/connection-error.log'
+            );
+            header('Location: /error-500');
+            die();
         }
 
-
-        $view = new View();
-        $view->generateView('./view/catalog/catalog.php',
-            [
-                'productList' => $productList,
-                'currentPageNumber' => $currentPageNumber,
-                'totalProducts' => $totalProducts,
-                'countOfPages' => ceil($totalProducts / self::PAGE_SIZE),
-                'pageUrl' => $pageUrl
-            ]
-        );
-    }
-
-    public static function dropTable(): void
-    {
-        Products::dropTable();
-
-        header('Location: /');
-        die();
     }
 
     public static function createTable(): void
     {
-        Products::createTable();
-        header('Location: /');
-        die();
+        try {
+            Products::createTable();
+            header('Location: /');
+        } catch (Exception $exception) {
+            //todo #1 добавить проверку на создание файла, и директории под него НУЖНО ЛИ?
+            error_log(
+                $exception->getMessage() . PHP_EOL,
+                3,
+                $_SERVER['DOCUMENT_ROOT'] . '/logs/connection-error.log'
+            );
+            header('Location: /error-500');
+            die();
+        }
+    }
 
+    public static function dropTable(): void
+    {
+        try {
+            Products::dropTable();
+
+            header('Location: /');
+            die();
+        } catch (Exception $exception) {
+            //todo #2 добавить проверку на создание файла, и директории под него НУЖНО ЛИ?
+            error_log(
+                $exception->getMessage() . PHP_EOL,
+                3,
+                $_SERVER['DOCUMENT_ROOT'] . '/logs/connection-error.log'
+            );
+            header('Location: /error-500');
+            die();
+        }
     }
 
     public static function generateProducts($quantity): void
