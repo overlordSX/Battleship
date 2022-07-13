@@ -1,15 +1,15 @@
-<?php
+<?
 /**
  * @var int $countOfPages
  * @var int $currentPageNumber
  * @var int $totalProducts
  * @var int $pageUrl
+ * @var array $query
  */
 ?>
 
-<?php
-$headerView = new View();
-$headerView->generateView(
+<?
+View::generateView(
     'view/layouts/header.php',
     ['title' => "Каталог товаров, стр. " . $currentPageNumber]
 );
@@ -17,7 +17,7 @@ $headerView->generateView(
 
     <div class="container">
         <div class="row row-cols-1 row-cols-md-3 g-4">
-            <?php
+            <?
             /**
              * @var ProductEntity[] $productList
              * @var ProductEntity $product
@@ -29,14 +29,15 @@ $headerView->generateView(
                             <h5 class="card-title"><?= $product->getName() ?></h5>
                             <h6 class="card-subtitle mb-2 text-muted"><?= $product->getPrice() . " ₽" ?></h6>
                             <p class="card-text"><?= $product->getDescription() ?></p>
-                            <p class="card-text text-muted text-end">Количество
-                                отзывов: <span class="badge
-                                <?php if ($product->getQuantityOfComments() > 0) {
-                                    echo "bg-primary";
-                                } else {
-                                    echo "bg-secondary";
-                                } ?>
-                                rounded-pill"><?= $product->getQuantityOfComments() ?></span></p>
+                            <?
+                            $commentBadgeStyle = "badge rounded-pill ";
+                            $commentBadgeStyle .= ($product->getQuantityOfComments() > 0) ? "bg-primary" : "bg-secondary";
+                            ?>
+                            <p class="card-text text-muted text-end">Количество отзывов:
+                                <span class="<?= $commentBadgeStyle ?>">
+                                    <?= $product->getQuantityOfComments() ?>
+                                </span>
+                            </p>
                             <div class="row row-cols-2 align-items-center justify-content-center">
                                 <a href="<?= "/catalog/product/" . $product->getId() ?>"
                                    class="btn btn-primary">Просмотр</a>
@@ -60,17 +61,16 @@ $headerView->generateView(
         </div>
 
 
-        <?php
-        $paginationView = new View();
-        $paginationView->generateView(
+        <?
+        View::generateView(
             "view/pagination/pagination.php",
             [
                 'countOfPages' => $countOfPages,
                 'currentPageNumber' => $currentPageNumber,
-                'currentUrl' => $pageUrl
+                'currentUrl' => $pageUrl,
+                'query' => $query
             ]
         );
-
         ?>
 
         <br>
@@ -80,47 +80,33 @@ $headerView->generateView(
                     <h4>Сортировка</h4>
                 </div>
 
-                <div class="col">
-                    <?php
-                        if ($_SERVER['REQUEST_URI'] === '/catalog/sort/price') { ?>
-                        <a href="/catalog/sort/price/desc">
-                        <?php
-                        } else { ?>
-                        <a href="/catalog/sort/price">
-                            <?php
+
+                <?
+                $sortParams =
+                    [
+                        'По цене' => 'price',
+                        'По названию' => 'name',
+                        'По отзывам' => 'comments'
+                    ];
+                $selfQuery = [];
+                foreach ($sortParams as $title => $sortParam): ?>
+                    <div class="col">
+                        <?
+                        $copyQuery['sortBy'] = $sortParam;
+                        if (isset($query['sortBy'])) {
+                            if ($query['sortBy'] == $copyQuery['sortBy']) {
+                                $copyQuery['order'] = isset($query['order']) ? null : 'desc';
                             }
-                    ?>
-                            <button class="btn btn-outline-secondary">По цене</button>
+                        }
+
+                        $sortUrl = 'catalog?' . http_build_query($copyQuery);
+
+                        ?>
+                        <a href="<?= $sortUrl ?>">
+                            <button class="btn btn-outline-secondary"><?= $title ?></button>
                         </a>
-                </div>
-
-                <div class="col">
-                    <?php
-                    if ($_SERVER['REQUEST_URI'] === '/catalog/sort/name') { ?>
-                    <a href="/catalog/sort/name/desc">
-                        <?php
-                        } else { ?>
-                        <a href="/catalog/sort/name">
-                            <?php
-                            }
-                            ?>
-                        <button class="btn btn-outline-secondary">По названию</button>
-                    </a>
-                </div>
-
-                <div class="col">
-                    <?php
-                    if ($_SERVER['REQUEST_URI'] === '/catalog/sort/comments') { ?>
-                    <a href="/catalog/sort/comments/desc">
-                        <?php
-                        } else { ?>
-                        <a href="/catalog/sort/comments">
-                            <?php
-                            }
-                            ?>
-                        <button class="btn btn-outline-secondary">По комментариям</button>
-                    </a>
-                </div>
+                    </div>
+                <? endforeach; ?>
 
                 <div class="col">
                     <a href="/catalog">
@@ -146,9 +132,8 @@ $headerView->generateView(
         <br>
     </div>
 
-<?php
-$footerView = new View();
-$footerView->generateView(
+<?
+View::generateView(
     'view/layouts/footer.php'
 );
 ?>
