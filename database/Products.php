@@ -9,7 +9,8 @@ class Products
     public static function createTable(): void
     {
         //TODO 1 узнать нужно ли это защитить как то от атак
-        $createTableQuery = "CREATE TABLE IF NOT EXISTS `products` 
+        $createTableQuery = "
+        CREATE TABLE IF NOT EXISTS `products` 
         (`id` INT NOT NULL AUTO_INCREMENT, 
         `name` VARCHAR(200) NOT NULL,
         `description` VARCHAR(500) NOT NULL,
@@ -19,91 +20,40 @@ class Products
         Database::exec($createTableQuery);
     }
 
-    /**
-     * @return ProductEntity[] возвращает массив объктов
-     */
-    public static function selectAllProducts(): array
+    public static function isTableExists(): bool
     {
-        $selectAllQuery = "select * from products;";
-        $result = Database::queryFetchAll($selectAllQuery);
+        $isExistQuery = '
+        SELECT COUNT(*)
+        FROM information_schema.tables 
+        WHERE table_schema = DATABASE() AND table_name = `products`;';
 
-        return EntityUtil::resultToListOfEntities("ProductEntity", $result);
+        return Database::queryFetchRow($isExistQuery);
     }
 
-    /**
-     * @param int $limit сколько записей взять
-     * @param int $offset начиная с какой записи
-     * @return ProductEntity[] вернет массив объектов
-     */
-    public static function selectProductsWithQuantityOfCommentsLimitOffset(int $limit, int $offset): array
+    public static function getProductsWithQuantityOfCommentsWithSort(int $limit, int $offset = 0, string $sortParam = '', string $order = 'asc'): array
     {
-        $selectLimitOffsetQuery = "
-        select p.id, p.name, p.price, p.description, count(product_id) as quantityOfComments from 
-        products as p LEFT JOIN comments as c
+        $format = '
+        select p.id, name, price, description, count(product_id) as comments
+        from products as p LEFT JOIN comments as c
         on (p.id = c.product_id)
-        group by 1,2,3,4
-        LIMIT $limit OFFSET $offset
-        ";
+        group by p.id, name, price, description
+        order by %s %s 
+        LIMIT %s OFFSET %s;';
 
-        $result = Database::queryFetchAll($selectLimitOffsetQuery);
+        $query = sprintf($format, $sortParam, $order, $limit, $offset);
+        //echo $sql;
+
+        $result = Database::queryFetchAll($query);
         return EntityUtil::resultToListOfEntities("ProductEntity", $result);
     }
 
-    //todo в такие моменты начинаешь мечтать о билдере :D
-    public static function selectProductsWithQuantityOfCommentsSortByNameLimitOffset(int $limit, int $offset, string $order): array
+    public static function getProductWithId($id): ProductEntity|bool
     {
-        $selectLimitOffsetQuery = "
-        select p.id, p.name, p.price, p.description, count(product_id) as quantityOfComments from 
-        products as p LEFT JOIN comments as c
-        on (p.id = c.product_id)
-        group by p.id, p.name, p.price, p.description
-        order by p.name $order
-        LIMIT $limit OFFSET $offset
-        ";
+        $selectAllQuery = "select * from products where id = ?";
+        $values = [$id];
+        $result = Database::queryFetchRow($selectAllQuery, $values);
 
-        $result = Database::queryFetchAll($selectLimitOffsetQuery);
-        return EntityUtil::resultToListOfEntities("ProductEntity", $result);
-    }
-
-
-    public static function selectProductsWithQuantityOfCommentsSortByPriceLimitOffset(int $limit, int $offset, string $order): array
-    {
-        $selectLimitOffsetQuery = "
-        select p.id, p.name, p.price, p.description, count(product_id) as quantityOfComments from 
-        products as p LEFT JOIN comments as c
-        on (p.id = c.product_id)
-        group by p.id, p.name, p.price, p.description
-        order by p.price $order
-        LIMIT $limit OFFSET $offset
-        ";
-
-        $result = Database::queryFetchAll($selectLimitOffsetQuery);
-        return EntityUtil::resultToListOfEntities("ProductEntity", $result);
-    }
-
-    public static function selectProductsWithQuantityOfCommentsSortByCommentsLimitOffset(int $limit, int $offset, string $order): array
-    {
-        $selectLimitOffsetQuery = "
-        
-        select p.id, p.name, p.price, p.description, count(product_id) as quantityOfComments from 
-        products as p LEFT JOIN comments as c
-        on (p.id = c.product_id)
-        group by p.id, p.name, p.price, p.description
-        order by quantityOfComments $order
-        limit $limit offset $offset
-        ";
-
-        $result = Database::queryFetchAll($selectLimitOffsetQuery);
-
-        return EntityUtil::resultToListOfEntities("ProductEntity", $result);
-    }
-
-    public static function selectProductWithId($id): array
-    {
-        $selectAllQuery = "select * from products where id = $id";
-        $result = Database::queryFetchAll($selectAllQuery);
-
-        return EntityUtil::resultToListOfEntities("ProductEntity", $result);
+        return $result ? EntityUtil::resultToEntity("ProductEntity", $result) : false;
     }
 
     public static function getCountOfProducts(): int
