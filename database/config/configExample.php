@@ -1,7 +1,7 @@
 <?php
 
-$host = 'your_host';
-$db = 'your_db';
-$user = 'user';
-$pass = 'pass';
-$charset = 'db_charset';
+$dbHost = 'your_host';
+$dbName = 'your_db';
+$dbUser = 'user';
+$dbPass = 'pass';
+$dbCharset = 'utf8';
