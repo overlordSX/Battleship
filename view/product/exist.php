@@ -1,13 +1,13 @@
-<?php
+<?
 /**
  * @var ProductEntity $product
  * @var CommentEntity[] $commentsList
  * @var int $commentPage
  * @var int $totalPages
+ * @var array $query
  */
 
-$headerView = new View();
-$headerView->generateView(
+View::generateView(
     'view/layouts/header.php',
     ['title' => "Товар №" . $product->getId()]
 );
@@ -27,7 +27,7 @@ $headerView->generateView(
 
                     <div class="row row-cols-auto justify-content-center">
                         <div class="col">
-                            <a href="/catalog/">
+                            <a href="/catalog">
                                 <button type="button" class="btn btn-outline-primary">Каталог</button>
                             </a>
                         </div>
@@ -45,23 +45,23 @@ $headerView->generateView(
     </div>
 
 
-<?php
-$commentView = new View();
-$commentView->generateView(
+<?
+$query = $query ?? [];
+View::generateView(
     'view/comments/comments.php',
     [
         'commentsList' => $commentsList,
         'productId' => $product->getId(),
         'commentPage' => $commentPage,
-        'totalPages' => $totalPages
+        'totalPages' => $totalPages,
+        'query' => $query
     ]
 );
 ?>
 
 
-<?php
-$footerView = new View();
-$footerView->generateView(
+<?
+View::generateView(
     'view/layouts/footer.php'
 );
 ?>
