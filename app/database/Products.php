@@ -8,7 +8,6 @@ class Products
 
     public static function createTable(): void
     {
-        //TODO 1 узнать нужно ли это защитить как то от атак
         $createTableQuery = "
         CREATE TABLE IF NOT EXISTS `products` 
         (`id` INT NOT NULL AUTO_INCREMENT, 
@@ -30,11 +29,14 @@ class Products
         return Database::queryFetchRow($isExistQuery);
     }
 
-    public static function getProductsWithQuantityOfCommentsWithSort(int $limit, int $offset = 0, string $sortParam = '', string $order = 'asc'): array
+    public static function getProductsWithQuantityOfActiveCommentsWithSort(int $limit, int $offset = 0, string $sortParam = 'id', string $order = 'asc'): array
     {
         $format = '
         select p.id, name, price, description, count(product_id) as comments
-        from products as p LEFT JOIN comments as c
+        from products as p LEFT JOIN (
+            SELECT * FROM comments
+            where activity_status = true
+            ) as c
         on (p.id = c.product_id)
         group by p.id, name, price, description
         order by %s %s 
@@ -76,7 +78,6 @@ class Products
 
     public static function dropTable(): void
     {
-        //todo #3 если существует таблица комментариев, то при попытке удалить будет ошибка
         $dropTableQuery = "drop table if exists products";
         Database::exec($dropTableQuery);
     }
