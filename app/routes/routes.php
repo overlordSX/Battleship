@@ -13,34 +13,15 @@ Router::route(['/'], function () {
 
 
 Router::route(['/catalog/product/(\d+)', '/catalog/product/(\d+)/comments(.+)'], function (int $productId) {
-    ProductController::showProduct($productId, $_SERVER['REQUEST_URI']);
+    ProductController::showProduct($productId);
 });
 
 Router::route(['/catalog/product/(\d+)/comment/new'], function (int $productId) {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        CommentController::postNewComment($_POST['email'], $_POST['comment'], $productId);
-    }
-});
-
-
-Router::route(['/about'], function () {
-    echo "<h1>I'm Andrew</h1>";
+    CommentController::postNewComment($productId);
 });
 
 Router::route(['/catalog/product/new'], function () {
     ProductController::newProduct();
-});
-
-Router::route(['/catalog', '/catalog(.+)'], function () {
-    CatalogController::renderPage2($_SERVER['REQUEST_URI']);
-});
-
-Router::route(['/error-404'], function () {
-    require_once "templates/error-404.php";
-});
-
-Router::route(['/error-500'], function () {
-    require_once "templates/error-500.php";
 });
 
 // todo #1 это переделать в экшн кнопки
@@ -51,6 +32,19 @@ Router::route(['/catalog/drop'], function () {
 Router::route(['/catalog/create'], function () {
     CatalogController::createTable();
 });
+
+Router::route(['/catalog', '/catalog?(.+)'], function () {
+    CatalogController::renderPage();
+});
+
+Router::route(['/error-404'], function () {
+    View::generateView('view/errors/404.php');
+});
+
+Router::route(['/error-500'], function () {
+    View::generateView("view/errors/500.php");
+});
+
 
 Router::route(['/messages/drop'], function () {
     CommentController::dropTable();
