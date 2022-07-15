@@ -20,6 +20,7 @@ require_once "view/View.php";
 require_once "app/controllers/CatalogController.php";
 require_once "app/controllers/ProductController.php";
 require_once "app/controllers/CommentController.php";
+require_once "app/controllers/AdminController.php";
 
 require_once "app/validator/Validator.php";
 require_once "app/validator/RuleInterface.php";
