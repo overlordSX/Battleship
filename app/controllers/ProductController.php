@@ -37,7 +37,7 @@ class ProductController
                 );
 
                 Products::insertNewProduct($product);
-                header('Location: /catalog/');
+                header('Location: /catalog');
             }
         }
     }
@@ -52,10 +52,10 @@ class ProductController
             header('Location: /error-404');
         }
 
-        $totalComments = Comments::getCountOfComments($productId);
+        $totalComments = Comments::getCountOfActiveCommentsWithProductId($productId, true);
 
         $offset = ($currentCommentPage - 1) * CommentController::COMMENTS_PAGE_SIZE;
-        $commentsList = Comments::selectAllCommentsWithProductIdLimitOffset(
+        $commentsList = Comments::getAllActiveCommentsWithProductIdLimitOffset(
             productId: $productId,
             limit: CommentController::COMMENTS_PAGE_SIZE,
             offset: $offset
