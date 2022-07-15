@@ -19,7 +19,7 @@ class CatalogController
 
         $offset = ($currentPageNumber - 1) * self::PAGE_SIZE;
 
-        $productList = Products::getProductsWithQuantityOfCommentsWithSort(
+        $productList = Products::getProductsWithQuantityOfActiveCommentsWithSort(
             self::PAGE_SIZE,
             $offset,
             $sortParam,
@@ -35,14 +35,13 @@ class CatalogController
                 'pageUrl' => 'catalog'
             ]
         );
-
-
     }
 
     public static function createTable(): void
     {
         Products::createTable();
         header('Location: /');
+        die();
     }
 
     public static function dropTable(): void
@@ -54,7 +53,6 @@ class CatalogController
 
     public static function generateProducts($quantity): void
     {
-        Products::createTable();
         for ($i = 1; $i <= $quantity; $i++) {
             $product = new ProductEntity(
                 [
