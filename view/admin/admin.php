@@ -15,9 +15,9 @@
                 <?
                 $tableButtons =
                     [
-                        'Создать таблицу Отзывы' => '/admin/comments/create',
+                        'Создать таблицу Отзывы' => '/admin/messages/create',
                         'Создать таблицу Товары' => '/admin/catalog/create',
-                        'Удалить таблицу Отзывы' => '/admin/catalog/drop',
+                        'Удалить таблицу Отзывы' => '/admin/messages/drop',
                         'Удалить таблицу Товары' => '/admin/catalog/drop'
                     ]
                 ?>
