@@ -34,16 +34,43 @@ class Comments
         return Database::queryFetchRow($isExistQuery);
     }
 
-    public static function getCountOfComments($productId): int
+    public static function moderateComment($commentId ): void
     {
-        $getCountOfProductsQuery = "select COUNT(*) as totalComments from comments where product_id = $productId";
+        $query = '
+        UPDATE comments
+        SET
+            activity_status = true
+        WHERE
+            id = ?';
+
+        Database::prepareAndExecute($query, [$commentId]);
+    }
+
+    public static function getCountOfActiveCommentsWithProductId($productId): int
+    {
+        $getCountOfProductsQuery = "select COUNT(*) as totalComments from comments where product_id = ? and activity_status = true";
+        return Database::queryFetchRow($getCountOfProductsQuery, [$productId])['totalComments'];
+    }
+
+    public static function getCountOfAllNotActiveComments(): int
+    {
+        $getCountOfProductsQuery = "select COUNT(*) as totalComments from comments where activity_status = false";
         return Database::queryFetchRow($getCountOfProductsQuery)['totalComments'];
     }
 
-    //TODO #1 добавить вывод промодерированных отзывов
-    public static function selectAllCommentsWithProductIdLimitOffset($productId, $limit, $offset): array
+
+
+    public static function getAllActiveCommentsWithProductIdLimitOffset($productId, $limit, $offset): array
     {
-        $selectAllQuery = "select * from comments where product_id = $productId limit $limit offset $offset;";
+        $selectAllQuery = "select * from comments where product_id = $productId and activity_status = true limit $limit offset $offset;";
+        $result = Database::queryFetchAll($selectAllQuery);
+
+        return EntityUtil::resultToListOfEntities("CommentEntity", $result);
+    }
+
+    public static function getAllCommentsWithLimitOffsetNonModerate(int $limit, int $offset = 0): array
+    {
+        $selectAllQuery = "select * from comments where activity_status = 0 limit $limit offset $offset;";
         $result = Database::queryFetchAll($selectAllQuery);
 
         return EntityUtil::resultToListOfEntities("CommentEntity", $result);
@@ -51,15 +78,15 @@ class Comments
 
     public static function insertNewComment(CommentEntity $comment): void
     {
-        //TODO #6 так же тут где то нужно будет делать проверку на то что такой продукт существует
-        $insertQuery = "insert into comments (email, comment, product_id) values (?, ?, ?)";
+        $insertQuery = "insert into comments (email, comment, product_id, activity_status) values (?, ?, ?, 0)";
         Database::prepareAndExecute(
             $insertQuery,
             [
                 $comment->getEmail(),
                 $comment->getComment(),
                 $comment->getProductId()
-            ]);
+            ]
+        );
     }
 
     public static function dropTable(): void
