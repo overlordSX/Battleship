@@ -71,7 +71,7 @@
                  */
                 foreach ($commentsList as $comments): ?>
                     <div class="card ">
-                        <figure class="p-3 mb-0">
+                        <figure class="p-2 m-1">
                             <blockquote class="blockquote">
                                 <p><?= $comments->getComment() ?></p>
                             </blockquote>
