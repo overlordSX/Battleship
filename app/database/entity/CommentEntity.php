@@ -10,7 +10,7 @@ class CommentEntity extends AbstractEntity
     protected string $comment;
     protected int $product_id;
     protected ?int $id;
-    protected bool $activity_status = false;
+    protected bool $activity_status;
 
     public function __construct($data)
     {
@@ -20,11 +20,7 @@ class CommentEntity extends AbstractEntity
 
         $this->id = $data['id'] ?? null;
 
-        //todo подправить
-        //$this->activity_status = $data['activity_status'] ??
-        if (isset($data['activity_status'])) {
-            $this->activity_status = $data['activity_status'];
-        }
+        $this->id = $data['activity_status'] ?? false;
     }
 
     public function getId(): int
