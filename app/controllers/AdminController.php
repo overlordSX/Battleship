@@ -32,8 +32,6 @@ class AdminController
 
             $commentId = $_POST['commentId'] ?? null;
 
-            //todo тут метод проверки существования id и выброс ошибки
-
             Comments::moderateComment($commentId);
             header('Location: /admin');
 
