@@ -4,7 +4,6 @@
  * @var int $currentPageNumber
  * @var int $totalProducts
  * @var int $pageUrl
- * @var array $query
  */
 ?>
 
@@ -28,7 +27,15 @@ View::generateView(
                         <div class="card-body">
                             <h5 class="card-title"><?= $product->getName() ?></h5>
                             <h6 class="card-subtitle mb-2 text-muted"><?= $product->getPrice() . " ₽" ?></h6>
-                            <p class="card-text"><?= $product->getDescription() ?></p>
+                            <p class="card-text">
+                                <?
+                                $description = $product->getDescription();
+                                $description = strlen($description) > 100 ?
+                                    mb_substr($product->getDescription(), 0, 95, 'utf-8') . '...' :
+                                    $description;
+                                echo $description;
+                                ?>
+                            </p>
                             <?
                             $commentBadgeStyle = "badge rounded-pill ";
                             $commentBadgeStyle .= ($product->getQuantityOfComments() > 0) ? "bg-primary" : "bg-secondary";
@@ -59,8 +66,6 @@ View::generateView(
                 </div>
             </div>
         </div>
-
-
         <?
         View::generateView(
             "view/pagination/pagination.php",
@@ -68,11 +73,10 @@ View::generateView(
                 'countOfPages' => $countOfPages,
                 'currentPageNumber' => $currentPageNumber,
                 'currentUrl' => $pageUrl,
-                'query' => $query
+                'getQuery' => $_GET
             ]
         );
         ?>
-
         <br>
         <div class="container">
             <div class="row row-cols-auto">
@@ -88,19 +92,21 @@ View::generateView(
                         'По названию' => 'name',
                         'По отзывам' => 'comments'
                     ];
-                $selfQuery = [];
                 foreach ($sortParams as $title => $sortParam): ?>
                     <div class="col">
                         <?
-                        $copyQuery['sortBy'] = $sortParam;
-                        if (isset($query['sortBy'])) {
-                            if ($query['sortBy'] == $copyQuery['sortBy']) {
-                                $copyQuery['order'] = isset($query['order']) ? null : 'desc';
-                            }
+                        $currentSort['sortBy'] = $sortParam;
+                        if (
+                            isset($_GET['sortBy'])
+                            and $_GET['sortBy'] === $currentSort['sortBy']
+                            and isset($_GET['order'])
+                        ) {
+                            $currentSort['order'] = $_GET['order'] === 'desc' ? 'asc' : 'desc';
+                        } else {
+                            $currentSort['order'] = 'asc';
                         }
 
-                        $sortUrl = 'catalog?' . http_build_query($copyQuery);
-
+                        $sortUrl = 'catalog?' . http_build_query($currentSort);
                         ?>
                         <a href="<?= $sortUrl ?>">
                             <button class="btn btn-outline-secondary"><?= $title ?></button>
@@ -124,14 +130,11 @@ View::generateView(
             </div>
         </div>
 
-
         <h2>всего страниц будет ::: <?= $countOfPages ?></h2>
         <h2>всего продуктов в БД ::: <?= $totalProducts ?></h2>
         <h2>сколько отображается на одной старице ::: <?= CatalogController::PAGE_SIZE ?></h2>
-
         <br>
     </div>
-
 <?
 View::generateView(
     'view/layouts/footer.php'
