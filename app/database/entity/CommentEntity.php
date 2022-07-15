@@ -20,7 +20,7 @@ class CommentEntity extends AbstractEntity
 
         $this->id = $data['id'] ?? null;
 
-        $this->id = $data['activity_status'] ?? false;
+        $this->activity_status = $data['activity_status'] ?? false;
     }
 
     public function getId(): int
@@ -43,13 +43,9 @@ class CommentEntity extends AbstractEntity
         return $this->product_id;
     }
 
-    public function getActivityStatus(): mixed
+    public function getActivityStatus(): bool
     {
         return $this->activity_status;
     }
 
-    public function getQuantityOfComments(): int
-    {
-        return $this->quantityOfComments;
-    }
 }
