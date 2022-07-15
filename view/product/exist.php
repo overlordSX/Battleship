@@ -16,7 +16,7 @@ View::generateView(
 
     <div class="container">
     <div class="row">
-        <div class="col p-2">
+        <div class="col pt-2">
             <div class="card">
                 <div class="card-body">
                     <div class="p-3">
