@@ -4,7 +4,8 @@
  * @var CommentEntity[] $commentsList
  * @var int $commentPage
  * @var int $totalPages
- * @var array $query
+ * @var array $fieldsErrors
+ * @var array $trimPost
  */
 
 View::generateView(
@@ -46,7 +47,6 @@ View::generateView(
 
 
 <?
-$query = $query ?? [];
 View::generateView(
     'view/comments/comments.php',
     [
@@ -54,7 +54,8 @@ View::generateView(
         'productId' => $product->getId(),
         'commentPage' => $commentPage,
         'totalPages' => $totalPages,
-        'query' => $query
+        'fieldsErrors' => $fieldsErrors,
+        'trimPost' => $trimPost
     ]
 );
 ?>
