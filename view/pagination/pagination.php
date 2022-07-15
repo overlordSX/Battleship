@@ -28,7 +28,7 @@ if ($countOfPages > 1) {
 }
 ?>
 
-<div class="col">
+<div class="col pt-1">
     <div class="btn-toolbar" role="toolbar">
         <div class="btn-group me-2" role="group">
             <?
