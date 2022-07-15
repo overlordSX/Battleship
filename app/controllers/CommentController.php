@@ -38,7 +38,7 @@ class CommentController
                     [
                         'email' => $trimPost['email'],
                         'comment' => $trimPost['comment'],
-                        'product_id' => $trimPost['product_id']
+                        'product_id' => $productId
                     ]
                 );
 
