@@ -120,20 +120,8 @@ View::generateView(
                     </a>
                 </div>
             </div>
-
-            <div class="pt-3 row row-cols-auto align-items-center justify-content-center">
-                <div class="col">
-                    <a href="/">
-                        <button class="btn btn-outline-secondary">На главную</button>
-                    </a>
-                </div>
-            </div>
         </div>
 
-        <h2>всего страниц будет ::: <?= $countOfPages ?></h2>
-        <h2>всего продуктов в БД ::: <?= $totalProducts ?></h2>
-        <h2>сколько отображается на одной старице ::: <?= CatalogController::PAGE_SIZE ?></h2>
-        <br>
     </div>
 <?
 View::generateView(
