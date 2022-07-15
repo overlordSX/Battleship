@@ -4,25 +4,25 @@
  * @var int $countOfPages Количество страниц товаров
  * @var int $currentPageNumber Номер текущей страницы
  * @var string $currentUrl Ссылка текущей страницы
- * @var array $query
+ * @var array $getQuery
  */
 
 
-$query['page'] = 1;
-$paginationArray['1'] = $currentUrl . '?' . http_build_query($query);
+$getQuery['page'] = 1;
+$paginationArray['1'] = $currentUrl . '?' . http_build_query($getQuery);
 if ($countOfPages > 1) {
-    $query['page'] = 2;
-    $paginationArray['2'] = $currentUrl . '?' . http_build_query($query);
+    $getQuery['page'] = 2;
+    $paginationArray['2'] = $currentUrl . '?' . http_build_query($getQuery);
     for ($pageNumber = 1; $pageNumber < $countOfPages; $pageNumber++) {
         if (abs($currentPageNumber - $pageNumber) < 2) {
-            $query['page'] = $pageNumber;
-            $paginationArray[$pageNumber . ""] = $currentUrl . '?' . http_build_query($query);
+            $getQuery['page'] = $pageNumber;
+            $paginationArray[$pageNumber . ""] = $currentUrl . '?' . http_build_query($getQuery);
         }
     }
-    $query['page'] = $countOfPages - 1;
-    $paginationArray[$countOfPages - 1 . ""] = $currentUrl . '?' . http_build_query($query);
-    $query['page'] = $countOfPages;
-    $paginationArray[$countOfPages . ""] = $currentUrl . '?' . http_build_query($query);
+    $getQuery['page'] = $countOfPages - 1;
+    $paginationArray[$countOfPages - 1 . ""] = $currentUrl . '?' . http_build_query($getQuery);
+    $getQuery['page'] = $countOfPages;
+    $paginationArray[$countOfPages . ""] = $currentUrl . '?' . http_build_query($getQuery);
 
     ksort($paginationArray);
 }
