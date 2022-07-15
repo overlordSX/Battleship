@@ -41,7 +41,6 @@ class Products
         LIMIT %s OFFSET %s;';
 
         $query = sprintf($format, $sortParam, $order, $limit, $offset);
-        //echo $sql;
 
         $result = Database::queryFetchAll($query);
         return EntityUtil::resultToListOfEntities("ProductEntity", $result);
@@ -71,7 +70,8 @@ class Products
                 $product->getName(),
                 $product->getDescription(),
                 $product->getPrice()
-            ]);
+            ]
+        );
     }
 
     public static function dropTable(): void
