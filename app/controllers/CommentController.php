@@ -1,10 +1,10 @@
 <?php
 
-class CommentController
+class CommentController implements ControllerInterface
 {
     public const COMMENTS_PAGE_SIZE = 4;
 
-    public static function postNewComment($productId): void
+    public function postNewComment($productId): void
     {
         $product = Products::getProductWithId($productId);
         if (!$product) {
@@ -50,14 +50,14 @@ class CommentController
         }
     }
 
-    public static function createTable(): void
+    public function createTable(): void
     {
         Comments::createTable();
         header('Location: /');
         die();
     }
 
-    public static function dropTable(): void
+    public function dropTable(): void
     {
         Comments::dropTable();
 

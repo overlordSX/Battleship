@@ -6,7 +6,7 @@
 class Router
 {
     //хранит маршруты, маршруту соотвествует функция
-    private static array $routes = array();
+    private static array $routes = [];
 
     //запрет на создание и клонирование
     private function __construct()
@@ -19,21 +19,31 @@ class Router
 
 
     /**
+     * к началу автоматически добавляется /^, к концу $/, все / экранируются \/
      * @param array $patternArray массив шаблонов url адреса
-     * @param callable $callback функция, которая будет соответствовать этому шаблону
+     * @param string|ControllerInterface $className
+     * @param string $method
+     * @throws Exception
      */
-    public static function route(array $patternArray, callable $callback): void
+    //TODO сделать ClassName и 'method'
+    public static function route(array $patternArray, string $className, string $method): void
     {
+        if (!is_a($className, ControllerInterface::class)) {
+            throw new Exception('Такого контроллера нет');
+        }
+
+        $class = $className;
+
         foreach ($patternArray as $pattern) {
             $pattern = '/^' . str_replace('/', '\/', $pattern) . '$/';
-            self::$routes[$pattern] = $callback;
+            self::$routes[$pattern] = $class->$method;
         }
-        self::$routes[$pattern] = $callback;
     }
 
 
     /**
-     * @param string $url заправшиваемый url
+     * @var string $url заправшиваемый url
+     * @var callable $callback
      * @return mixed|void
      */
     public static function execute(string $url)
@@ -42,6 +52,7 @@ class Router
         foreach (self::$routes as $pattern => $callback) {
             if (preg_match($pattern, $url, $params)) {
                 array_shift($params);
+                //echo $callback;
                 return call_user_func_array($callback, array_values($params));
             }
         }

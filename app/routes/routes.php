@@ -1,48 +1,54 @@
 <?php
-Router::route(['^/catalog/product/(\d+)$', '^/catalog/product/(\d+)/comments(.+)$'], function (int $productId) {
+Router::route(['^/catalog/product/(\d+)$', '^/catalog/product/(\d+)/comments(.+)$'], ProductController::class, 'showProduct');
+/*function (int $productId) {
     ProductController::showProduct($productId);
-});
+});*/
 
-Router::route(['^/catalog/product/(\d+)/comment/new$'], function (int $productId) {
-    CommentController::postNewComment($productId);
-});
+Router::route(['^/catalog/product/(\d+)/comment/new$'], CommentController::class, 'postNewComment');
 
-Router::route(['^/catalog/product/new$'], function () {
-    ProductController::newProduct();
-});
 
-Router::route(['^/$', '^/catalog$', '^/catalog\?.+$'], function () {
-    CatalogController::renderPage();
-});
+Router::route(['^/catalog/product/new$'], ProductController::class, 'newProduct');
 
-Router::route(['^/error-404$'], function () {
-    View::generateView('view/errors/404.php');
-});
 
-Router::route(['^/error-500$'], function () {
-    View::generateView("view/errors/500.php");
-});
+Router::route(['^/$', '^/catalog$', '^/catalog\?.+$'], CatalogController::class, 'renderPage');
 
-Router::route(['^/admin/catalog/drop$'], function () {
+
+Router::route(
+    ['^/error-404$'],
+    ErrorController::class , 'get404'
+);
+
+Router::route(
+    ['^/error-500$'],
+    ErrorController::class, 'get500'
+);
+
+Router::route(['^/admin/catalog/drop$'], CatalogController::class, 'dropTable');
+/*    function () {
     CatalogController::dropTable();
-});
+});*/
 
-Router::route(['^/admin/catalog/create$'], function () {
+Router::route(['^/admin/catalog/create$'], CatalogController::class, 'createTable');
+/*function () {
     CatalogController::createTable();
-});
+});*/
 
-Router::route(['^/admin/messages/drop$'], function () {
+Router::route(['^/admin/messages/drop$'], CommentController::class, 'dropTable');
+/*function () {
     CommentController::dropTable();
-});
+});*/
 
-Router::route(['^/admin/messages/create$'], function () {
+Router::route(['^/admin/messages/create$'], CommentController::class, 'createTable');
+/*function () {
     CommentController::createTable();
-});
+});*/
 
-Router::route(['^/admin$', '^/admin\?.+$'], function () {
+Router::route(['^/admin$', '^/admin\?.+$'], AdminController::class, 'adminPanel');
+/*function () {
     AdminController::adminPanel();
-});
+});*/
 
-Router::route(['^/catalog/generate/(\d+)$'], function ($quantity) {
+Router::route(['^/catalog/generate/(\d+)$'], CatalogController::class, 'generateProducts');
+/*    function ($quantity) {
     CatalogController::generateProducts($quantity);
-});
+});*/

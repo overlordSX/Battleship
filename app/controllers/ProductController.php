@@ -1,8 +1,8 @@
 <?php
 
-class ProductController
+class ProductController implements ControllerInterface
 {
-    public static function newProduct(): void
+    public function newProduct(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             View::generateView('view/product/new.php');
@@ -42,7 +42,7 @@ class ProductController
         }
     }
 
-    public static function showProduct($productId, $fieldsTrimData = null, $fieldsErrors = null): void
+    public function showProduct($productId, $fieldsTrimData = null, $fieldsErrors = null): void
     {
 
         $currentCommentPage = $_GET['page'] ?? 1;

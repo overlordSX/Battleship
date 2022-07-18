@@ -1,10 +1,10 @@
 <?php
 
-class AdminController
+class AdminController implements ControllerInterface
 {
     public const ADMIN_PAGE_SIZE = 5;
 
-    public static function adminPanel(): void
+    public function adminPanel(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
