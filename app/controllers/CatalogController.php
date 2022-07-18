@@ -1,11 +1,56 @@
 <?php
 
-class CatalogController
+class CatalogController implements ControllerInterface
 {
     public const PAGE_SIZE = 5;
 
-    public static function renderPage(): void
+    public function renderPage(): void
     {
+
+        echo '<br>';
+
+        $testQuery = new QueryBuilder();
+
+        var_dump(empty([]));
+
+        /*echo $testQuery
+            ->from('products')
+            ->join('products', 'comments', 'id', '=', 'product_id')
+            ->where('product_id', '=', ':id')
+            ->groupBy('id', 'name')
+            ->having('product_id', '=', ':id')
+            ->select('products.id', 'products.name')
+            ->orderBy(1, 'asc')
+            ->limitOffset(10, 5)
+            ->getQuery();*/
+
+        $realQuery = new QueryBuilder();
+
+        var_dump(
+            $realQuery
+                ->from('products')
+                ->where('id', '<', ':id')
+                ->groupBy('name')
+                ->havingFromRow('count(name) > 1')
+                ->select('name, count(name) as `количество повторов`')
+
+                ->fetchAll(['id' => 500])
+        );
+
+        echo '<br>';
+
+        $printQuery = new QueryBuilder();
+
+        var_dump(
+            $printQuery
+                ->from('products')
+                ->where('name', '=', ':name')
+                ->select('name, id')
+
+                ->fetchAll(['name' => 'Товар 11266'])
+        );
+
+
         $currentPageNumber = $_GET['page'] ?? 1;
         $sortParam = $_GET['sortBy'] ?? "id";
         $order = $_GET['order'] ?? 'asc';
@@ -37,21 +82,21 @@ class CatalogController
         );
     }
 
-    public static function createTable(): void
+    public function createTable(): void
     {
         Products::createTable();
         header('Location: /');
         die();
     }
 
-    public static function dropTable(): void
+    public function dropTable(): void
     {
         Products::dropTable();
         header('Location: /');
         die();
     }
 
-    public static function generateProducts($quantity): void
+    public function generateProducts($quantity): void
     {
         for ($i = 1; $i <= $quantity; $i++) {
             $product = new ProductEntity(
