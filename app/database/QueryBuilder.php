@@ -16,6 +16,14 @@ class QueryBuilder
 
     protected array $executeParams = [];
 
+
+    public function clear(): void
+    {
+        foreach ($this->query as $key => $value) {
+            $this->query[$key] = '';
+        }
+    }
+
     public function from(string $table): self
     {
         $this->query['from'] .= ' FROM ' . $table;
@@ -56,9 +64,6 @@ class QueryBuilder
 
     public function groupBy(string ...$fields): self
     {
-        /*if (empty($this->query['groupBy'])) {
-
-        }*/
 
         $this->query['groupBy'] = ' group by ';
 
@@ -141,8 +146,6 @@ class QueryBuilder
     }
     public function fetchAll($params = []): array
     {
-        //var_dump($this->query);
-        //echo '<script>alert(123)</script>';
 
         return Database::queryFetchAll(implode('', $this->query), $params);
     }
