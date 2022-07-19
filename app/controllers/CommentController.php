@@ -32,7 +32,7 @@ class CommentController implements ControllerInterface
 
 
             if (!empty($fieldsErrors)) {
-                ProductController::showProduct($productId, $trimPost, $fieldsErrors);
+                (new ProductController)->showProduct($productId, $trimPost, $fieldsErrors);
             } else {
                 $ent = new CommentEntity(
                     [
