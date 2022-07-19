@@ -44,7 +44,7 @@ class ProductEntity extends AbstractEntity
         return $this->price;
     }
 
-    public function getQuantityOfComments(): mixed
+      public function getQuantityOfComments(): int
     {
         return $this->quantityOfComments;
     }
