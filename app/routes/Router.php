@@ -21,22 +21,22 @@ class Router
     /**
      * к началу автоматически добавляется /^, к концу $/, все / экранируются \/
      * @param array $patternArray массив шаблонов url адреса
-     * @param string|ControllerInterface $className
+     * @param ControllerInterface $className
      * @param string $method
      * @throws Exception
      */
     //TODO сделать ClassName и 'method'
     public static function route(array $patternArray, string $className, string $method): void
     {
-        if (!is_a($className, ControllerInterface::class)) {
+                if (!is_subclass_of($className, ControllerInterface::class)) {
             throw new Exception('Такого контроллера нет');
         }
 
-        $class = $className;
+        $class = new $className;
 
         foreach ($patternArray as $pattern) {
             $pattern = '/^' . str_replace('/', '\/', $pattern) . '$/';
-            self::$routes[$pattern] = $class->$method;
+            self::$routes[$pattern] = [$class, $method];
         }
     }
 
@@ -52,7 +52,7 @@ class Router
         foreach (self::$routes as $pattern => $callback) {
             if (preg_match($pattern, $url, $params)) {
                 array_shift($params);
-                //echo $callback;
+
                 return call_user_func_array($callback, array_values($params));
             }
         }
