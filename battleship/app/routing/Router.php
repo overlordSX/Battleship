@@ -21,12 +21,13 @@ class Router
     /**
      * к началу автоматически добавляется /^, к концу $/, все / экранируются \/
      * @param array $patternArray массив шаблонов url адреса
-     * @param ControllerInterface $className
-     * @param string $method
+     * @param array $classNameAndMethod
      * @throws Exception
      */
-    public static function route(array $patternArray, string $className, string $method): void
+    public static function route(array $patternArray, array $classNameAndMethod): void
     {
+        $className = $classNameAndMethod[0];
+        $method = $classNameAndMethod[1];
         //var_dump($patternArray, $className, $method);
         //var_dump(is_subclass_of($className, ControllerInterface::class));
         if (!is_subclass_of($className, ControllerInterface::class)) {
