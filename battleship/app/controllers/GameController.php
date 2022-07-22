@@ -17,7 +17,6 @@ class GameController implements ControllerInterface
         $playerCode = $this->getNewGameCode();
         $inviteCode = $this->getNewGameCode();
 
-        //$newPlayer->insert(['code' => $playerCode]);
 
         $playerModel = new PlayerModel();
         $playerModel
@@ -28,38 +27,30 @@ class GameController implements ControllerInterface
 
 
         $firstPlayer = $playerModel
-            //$dbPlayerId = $playerModel
             ->clear()
             ->query()
             ->select('*')
-            ->where2('code', '=', ':code')
-            //->getQuery());
+            ->where('code', '=', ':code')
             ->fetch(['code' => $playerCode]);
 
         /**
          * @var $secondPlayer PlayerEntity
          */
         $secondPlayer = $playerModel
-            //TODO сейчас я могу получить только весь объект целиком,
-            // если буду какой то конкретный атрибут получать, то будет ошибка
-            //$dbInvitePlayerId = $playerModel
             ->clear()
             ->query()
             ->select('*')
-            ->where2('code', '=', ':code')
-            //->getQuery());
+            ->where('code', '=', ':code')
             ->fetch(['code' => $inviteCode]);
-
-        //var_dump($dbPlayerId);
 
         $gameModel = new GameModel();
         $gameModel
             ->insert(
                 [
-                    'invite_code' => $inviteCode,
                     'turn' => $this->getRandomTurn(),
                     'game_status_id' => 1,
-                    'player_id' => $firstPlayer->getId()
+                    'first_player_id' => $firstPlayer->getId(),
+                    'second_player_id' => $secondPlayer->getId()
                 ]
             );
 
@@ -67,14 +58,12 @@ class GameController implements ControllerInterface
          * @var $currentGame GameEntity
          */
         $currentGame = $gameModel
-            //$dbGameId = $gameModel
             ->clear()
             ->query()
-            ->select('*')
-            ->where2('player_id', '=', ':id')
+            ->select('id')
+            ->where('first_player_id', '=', ':id')
             ->fetch(['id' => $firstPlayer->getId()]);
 
-        //echo ' ' . $dbGameId;
 
         //TODO так же тут должны создаваться game_field
         // для этой игры, для каждого игрока
@@ -95,18 +84,7 @@ class GameController implements ControllerInterface
                 'success' => true
             ];
 
-        //var_dump(count($data));
         JsonUtil::makeAnswer($data);
-
-
-        //TODO было нормальным
-        /*foreach ($gameCodes as $playerCode) {
-            //$newGameQuery->insert(['code' => $playerCode]);
-
-            $newGameQuery->
-            insertInto('player', [[':playerCode']], ['playerCode' => $playerCode]);
-        }*/
-
     }
 
     /**
@@ -117,177 +95,212 @@ class GameController implements ControllerInterface
      */
     public function getStatus($gameId, $playerCode)
     {
-        //echo 'игра: ' . $gameId . ' code: ' . $playerCode . '<br>';
-
-        //header('Content-Type: application/json');
 
         $gameModel = new GameModel();
 
-        //TODO по сути же тут нужно получить объект, GameEntity,
-        // следовательно нужно реализовать получение данных из строки
         /**
          * @var $currentGame GameEntity
          */
         $currentGame = $gameModel
             ->query()
             ->select('*')
-            ->where2('id', '=', ':gameId')
+            ->where('id', '=', ':gameId')
             ->fetch(['gameId' => $gameId]);
-
-
-        /*
-        print_r($currentGame);
-
-        $firstPlayerId = $currentGame['player_id'];
-
-        $inviteCode = $currentGame['invite_code'];*/
-
-        /*var_dump($firstPlayerId);
-        var_dump($inviteCode);*/
-
 
         $playerModel = new PlayerModel();
 
-        $secondPlayer = $playerModel
+        /**
+         * @var $currentPlayer PlayerEntity
+         */
+        $currentPlayer = $playerModel
+            ->query()
+            ->where('code', '=', ':code')
+            ->select('*')
+            ->fetch(['code' => $playerCode]);
+
+        $enemyId = $currentGame->getFirstPlayerId() === $currentPlayer->getId() ?
+            $currentGame->getSecondPlayerId() : $currentGame->getFirstPlayerId();
+
+        /**
+         * @var $enemyPlayer PlayerEntity
+         */
+        $enemyPlayer = $playerModel
             ->clear()
             ->query()
+            ->where('id', '=', ':id')
             ->select('*')
-            //TODO можно подправить where2 чтобы не писать :именованный плейсхолдер
-            ->where2('code', '=', ':code')
-            //->getQuery());
-            ->fetch(
-                [
-                    'code' => $currentGame->getInviteCode()
-                ]
-            );
+            ->fetch(['id' => $enemyId]);
 
-        var_dump($secondPlayer);
 
         $gameFieldModel = new GameFieldModel();
 
-
         /**
-         * @var $firstPlayerGameField GameFieldEntity
+         * @var $myGameField GameFieldEntity
          */
-        $firstPlayerGameField = $gameFieldModel
+        $myGameField = $gameFieldModel
             ->query()
-            ->where2('game_id', '=', ':gameId')
-            ->where2('player_id', '=', ':playerId')
+            ->where('game_id', '=', ':gameId')
+            ->where('player_id', '=', ':playerId')
             ->select('*')
-            //->getQuery();
             ->fetch(
                 [
                     'gameId' => $currentGame->getId(),
-                    'playerId' => $currentGame->getPlayerId()
+                    'playerId' => $currentPlayer->getId()
                 ]
             );
 
-        var_dump($firstPlayerGameField);
 
         /**
-         * @var $secondPlayerGameField GameFieldEntity
+         * @var $enemyGameField GameFieldEntity
          */
-        $secondPlayerGameField = $gameFieldModel
+        $enemyGameField = $gameFieldModel
             ->clear()
             ->query()
-            ->where2('game_id', '=', ':gameId')
-            ->where2('player_id', '=', ':playerId')
+            ->where('game_id', '=', ':gameId')
+            ->where('player_id', '=', ':playerId')
             ->select('*')
             ->fetch(
                 [
                     'gameId' => $currentGame->getId(),
-                    'playerId' => $secondPlayer->getId()
+                    'playerId' => $enemyPlayer->getId()
                 ]
             );
 
-        var_dump($secondPlayerGameField);
 
-        $firstPlayerShipPlacement = new ShipPlacementModel();
+        $shipPlacementModel = new ShipPlacementModel();
 
-        //TODO нормально ли тут исползовать такой метод без конвертации
-        // либо можно использовать здесь QueryBuilder, так как если
-        // его вызвать тут, то ему не передастся класс сущности к которой нужно конвертировать
-        echo '<br>';
-        var_dump($firstPlayerShipPlacement
-            ->query()
-            ->where2('game_field_id', '=', ':id')
-            ->selectRow('select count(*) as placed')
-            //->getQuery());
-            //->fetchAll());
-            ->fetchAllToArray(['id' => $firstPlayerGameField->getGameId()]));
-
-        //TODO сделать класс Resoure, там toArray приведение к массиву разными классами
-
-        /*$shipPlacementModel = new ShipPlacementModel();
-
-        $shipPlacementModel
-            ->query()
-            ->select()*/
-
-        $fieldMy = $fieldEnemy = array_fill(
-            0,
-            10,
-            array_fill(0, 10, ['empty', 0])
-        );
-
-
-        /*foreach ($fieldMy as $key => $field) {
-            echo $key;
-            foreach ($field as $key => $item) {
-                echo $key;
-                print_r($item);
-            }
-
-        }*/
-        //print_r($fieldMy);
-        //$fieldEnemy = [10][10];
+        $fieldMy = $this->getEmptyPlacementArray();
+        $fieldEnemy = $this->getEmptyPlacementArray();
         $usedPlaces = [];
 
 
-        //JsonUtil::makeAnswer($currentGame);
+        //TODO тут по сути нужно не первому и второму игроку по id, а именно currentPlayer & enemyPlayer
 
+        /**
+         * @var $myShipPlacedCount ShipPlacementEntity[]
+         */
+        $myShipPlacedCount = $shipPlacementModel
+            ->query()
+            ->where('game_field_id', '=', ':id')
+            ->selectRow('select count(*) as count')
+            ->fetchToArray(['id' => $myGameField->getId()])['count'];
 
-        //echo "here i am getStatus<br>";
-        //var_dump($_POST);
+        if ($myShipPlacedCount) {
+            /**
+             * @var $myPlacedShips ShipPlacementEntity[]
+             */
+            $myPlacedShips = $shipPlacementModel
+                ->clear()
+                ->query()
+                ->join('ship', 'ship_id', '=', 'id')
+                ->where('game_field_id', '=', ':id')
+                ->selectRow('select *')
+                ->fetchAll(['id' => $myGameField->getId()]);
 
-        /*        $json = {
-                "game":
-                {
-                    "id":"9",
-                    "status":"1",
-                    "invite":"aeGt81HUEn",
-                    "myTurn":false,
-                    "meReady":true
-                },
-                "fieldMy":[["hidden"...],...],
-                "fieldEnemy":[["hidden", ...],],
-                "usedPlaces":[],
-                "success":true
-                }*/
+            foreach ($myPlacedShips as $placedShip) {
+                $x = $placedShip->getCoordinateX();
+                $y = $placedShip->getCoordinateY();
+                $isHorizontal = $placedShip->getOrientation();
+                $name = $placedShip->getCustom('name');
 
+                $usedPlaces[] = $name;
 
-        for ($i = 0; $i < 10; $i++) {
-            for ($j = 0; $j < 10; $j++) {
-                $fields[$i][$j] = ['empty', 0];
+                if ($isHorizontal) {
+                    for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
+                        $fieldMy[$x + $i][$y] =
+                            [
+                                [$name, 0]
+                                //TODO потом, когда то, будет проверка на видимость, в зависимости от попадания
+                            ];
+                    }
+
+                } else {
+                    for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
+                        $fieldMy[$x][$y + $i] =
+                            [
+                                [$name, 0]
+                                //TODO потом, когда то, будет проверка на видимость, в зависимости от попадания
+                            ];
+                    }
+                }
+
             }
         }
+
+
+        $enemyShipPlacedCount = $shipPlacementModel
+            ->clear()
+            ->query()
+            ->where('game_field_id', '=', ':id')
+            ->selectRow('select count(*) as count')
+            ->fetchToArray(['id' => $enemyGameField->getId()])['count'];
+
+
+        if ($enemyShipPlacedCount) {
+            /**
+             * @var $enemyPlacedShips ShipPlacementEntity[]
+             */
+            $enemyPlacedShips = $shipPlacementModel
+                ->clear()
+                ->query()
+                ->join('ship', 'ship_id', '=', 'id')
+                ->where('game_field_id', '=', ':id')
+                ->selectRow('select *')
+                ->fetchAll(['id' => $enemyGameField->getId()]);
+
+            foreach ($enemyPlacedShips as $placedShip) {
+                $x = $placedShip->getCoordinateX();
+                $y = $placedShip->getCoordinateY();
+                $isHorizontal = $placedShip->getOrientation();
+                $name = $placedShip->getCustom('name');
+
+
+                if ($isHorizontal) {
+                    for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
+                        $fieldEnemy[$x + $i][$y] =
+                            [
+                                [$name, 0]
+                                //TODO потом, когда то, будет проверка на видимость, в зависимости от попадания
+                            ];
+                    }
+
+                } else {
+                    for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
+                        $fieldEnemy[$x][$y + $i] =
+                            [
+                                [$name, 0]
+                                //TODO потом, когда то, будет проверка на видимость, в зависимости от попадания
+                            ];
+                    }
+                }
+
+            }
+        }
+
+
+        //TODO сделать класс Resource, там toArray приведение к массиву разными классами, вроде это про JSON
+        // это про ship-placement
+        // в двух вариантах
+
 
         $json = [
             'game' =>
                 [
-                    'id' => $gameId,
-                    'status' => 1,
-                    'invite' => 4321,
-                    'myTurn' => false,
-                    'meReady' => false
+                    'id' => $currentGame->getId(),
+                    'status' => $currentGame->getGameStatusId(),
+                    //TODO можно сделать чтобы, в зависимости от кода доступа к игре
+                    // отправлялась пригласительная ссылка с кодом другого игрока
+                    'invite' => $enemyPlayer->getCode(),
+                    'myTurn' => $currentGame->getTurn(),
+                    'meReady' => false//TODO походу надо добавить в player поле ready
                 ],
-            'fieldMy' => $fields,
-            'fieldEnemy' => $fields,
-            'usedPlaces' => [],
+            'fieldMy' => $fieldMy,
+            'fieldEnemy' => $fieldEnemy,
+            'usedPlaces' => $usedPlaces,
             'success' => true
         ];
 
-        //JsonUtil::makeAnswer($json);
+        JsonUtil::makeAnswer($json);
 
     }
 
@@ -309,6 +322,19 @@ class GameController implements ControllerInterface
         /*var_dump(md5(microtime(true)));
         var_dump(md5(microtime(true)));*/
         return uniqid();
+    }
+
+    /**
+     * массив 10х10 со значениями ["empty", 0]
+     * @return array [[["empty", 0],...]], [[...],... ]],... [[....],..]]]
+     */
+    protected function getEmptyPlacementArray(): array
+    {
+        return array_fill(
+            0,
+            10,
+            array_fill(0, 10, ['empty', 0])
+        );
     }
 
 }
