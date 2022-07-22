@@ -1,12 +1,14 @@
 <?
+//TODO в метод роут можно добавить параметр, который будет отвечать за тип POST|GET
 
 Router::route(['/db?(.+)'], [DatabaseController::class, 'createTables']);
 
 Router::route(['/api/start/'], [GameController::class, 'startNewGame']);
 
-Router::route(['/api/status/(\d+)/(.+)/'], [GameController::class, 'getStatus']);
+//TODO из фронта просит запрос без /, а в ТЗ со /
+Router::route(['/api/status/(\d+)/(.+)'], [GameController::class, 'getStatus']);
 
-Router::route(['/api/place-ship/(\d+)/(.+)/'], [PlacementController::class, 'placeShip']);
+Router::route(['/api/place-ship/(\d+)/(.+)'], [PlacementController::class, 'placeShip']);
 
 Router::route(['/api/clear-field/(\d+)/(.+)/'], [PlacementController::class, 'clearField']);
 
