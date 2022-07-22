@@ -9,14 +9,11 @@ class ShipPlacementEntity extends AbstractEntity
     protected int $shipId;
     protected int $gameFieldId;
 
+    protected array $data;
+
     public function __construct(array $row)
     {
-        $this->id = $row['id'] ?? null;
-        $this->coordinate_x = $row['coordinate_x'];
-        $this->coordinate_y = $row['coordinate_y'];
-        $this->orientation = $row['orientation'];
-        $this->shipId = $row['ship_id'];
-        $this->gameFieldId = $row['game_field_id'];
+        $this->data = $row;
     }
 
     /**
@@ -24,7 +21,7 @@ class ShipPlacementEntity extends AbstractEntity
      */
     public function getId(): ?int
     {
-        return $this->id;
+        return $this->data['id'];
     }
 
     /**
@@ -32,7 +29,7 @@ class ShipPlacementEntity extends AbstractEntity
      */
     public function getCoordinateX(): int
     {
-        return $this->coordinate_x;
+        return $this->data['coordinate_x'];
     }
 
     /**
@@ -40,15 +37,15 @@ class ShipPlacementEntity extends AbstractEntity
      */
     public function getCoordinateY(): int
     {
-        return $this->coordinate_y;
+        return $this->data['coordinate_y'];
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function getOrientation(): int
+    public function getOrientation(): bool
     {
-        return $this->orientation;
+        return $this->data['orientation'];
     }
 
     /**
@@ -56,7 +53,7 @@ class ShipPlacementEntity extends AbstractEntity
      */
     public function getShipId(): int
     {
-        return $this->shipId;
+        return $this->data['ship_id'];
     }
 
     /**
@@ -64,6 +61,11 @@ class ShipPlacementEntity extends AbstractEntity
      */
     public function getGameFieldId(): int
     {
-        return $this->gameFieldId;
+        return $this->data['game_field_id'];
+    }
+
+    public function getCustom(string $attribute): mixed
+    {
+        return $this->data[$attribute];
     }
 }

@@ -5,13 +5,11 @@ class PlayerEntity extends AbstractEntity
     protected ?int $id;
     protected string $code;
 
-    //внутри можно хранить data[] со всеми параметрами
-
+    protected array $data;
 
     public function __construct(array $row)
     {
-        $this->id = $row['id'] ?? null;
-        $this->code = $row['code'];
+        $this->data = $row;
     }
 
 
@@ -21,7 +19,7 @@ class PlayerEntity extends AbstractEntity
      */
     public function getId(): ?int
     {
-        return $this->id;
+        return $this->data['id'];
     }
 
     /**
@@ -29,6 +27,6 @@ class PlayerEntity extends AbstractEntity
      */
     public function getCode(): string
     {
-        return $this->code;
+        return $this->data['code'];
     }
 }

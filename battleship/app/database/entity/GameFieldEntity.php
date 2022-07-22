@@ -3,14 +3,12 @@
 class GameFieldEntity extends AbstractEntity
 {
     protected ?int $id;
-    protected int $gameId;
-    protected int $playerId;
+
+    protected array $data;
 
     public function __construct(array $row)
     {
-        $this->id = $row['id'] ?? null;
-        $this->gameId = $row['game_id'];
-        $this->playerId = $row['player_id'];
+        $this->data = $row;
     }
 
     /**
@@ -18,7 +16,7 @@ class GameFieldEntity extends AbstractEntity
      */
     public function getId(): ?int
     {
-        return $this->id;
+        return $this->data['id'];
     }
 
     /**
@@ -26,7 +24,7 @@ class GameFieldEntity extends AbstractEntity
      */
     public function getGameId(): int
     {
-        return $this->gameId;
+        return $this->data['game_id'];
     }
 
     /**
@@ -34,6 +32,6 @@ class GameFieldEntity extends AbstractEntity
      */
     public function getPlayerId(): int
     {
-        return $this->playerId;
+        return $this->data['player_id'];
     }
 }

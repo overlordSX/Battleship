@@ -1,23 +1,27 @@
 <?php
 
+/**
+ * есть следующие поля:
+ * id, turn, game_status_id, first_player_id, second_player_id
+ */
 class GameEntity extends AbstractEntity
 {
     protected ?int $id;
-    protected string $inviteCode;
     protected bool $turn;
     protected int $gameStatusId;
-    protected int $playerId;
+    protected int $firstPlayerId;
+    protected int $secondPlayerId;
 
+    protected array $data;
 
-    //TODO либо сеттеры геттеры, либо билдер, либо конструктор из ассоциативной строки
 
     public function __construct(array $row)
     {
-        $this->id = $row['id'] ?? null;
-        $this->inviteCode = $row['invite_code'];
-        $this->turn = $row['turn'];
-        $this->gameStatusId = $row['game_status_id'];
-        $this->playerId = $row['player_id'];
+        //TODO откуда и что выкидывать по поводу того что кто либо хочет получить не существующую игру
+        // если будет несуществующий id, то придет false из pdo
+
+        $this->data = $row;
+
     }
 
     /**
@@ -25,23 +29,7 @@ class GameEntity extends AbstractEntity
      */
     public function getId(): ?int
     {
-        return $this->id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getInviteCode(): string
-    {
-        return $this->inviteCode;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isTurn(): bool
-    {
-        return $this->turn;
+        return $this->data['id'];
     }
 
     /**
@@ -49,14 +37,31 @@ class GameEntity extends AbstractEntity
      */
     public function getGameStatusId(): int
     {
-        return $this->gameStatusId;
+        return $this->data['game_status_id'];
+    }
+
+    /**
+     * @return bool
+     */
+    public function getTurn(): bool
+    {
+        return $this->data['turn'];
     }
 
     /**
      * @return int
      */
-    public function getPlayerId(): int
+    public function getFirstPlayerId(): mixed
     {
-        return $this->playerId;
+        return $this->data['first_player_id'];
     }
+
+    /**
+     * @return int
+     */
+    public function getSecondPlayerId(): mixed
+    {
+        return $this->data['second_player_id'];
+    }
+
 }
