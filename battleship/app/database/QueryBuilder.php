@@ -16,10 +16,10 @@ class QueryBuilder
         ];
 
     protected string $className;
+    protected string $mainTableName;
 
     public function __construct(string $className = '')
     {
-        //еще можно чекнуть что className subclass_of(
         if (!empty($className) and !is_subclass_of($className, AbstractEntity::class)) {
             //var_dump($className);
             throw new Exception('Такого класса сущности нет');
@@ -45,7 +45,8 @@ class QueryBuilder
         [
             'update' => '',
             'set' => '',
-            'where' => [] // не нужен id нужен, его в where
+            'where' => [] // не нужен id нужен, его в where,
+            ////TODO объединить все для инсерта и апдейта
         ];
 
     protected array $deleteStmt =
@@ -73,12 +74,6 @@ class QueryBuilder
      */
     public function insertMulti(string $tableName, array $tableColumns, array $params = []): bool
     {
-        /*print_r(QueryBuilderUtil::getTableColumns($tableName));
-        $tableColumns = !$tableColumns ? QueryBuilderUtil::getTableColumns($tableName) : $tableColumns;*/
-
-
-        //print_r($tableColumns);
-
 
         $this->query['insert'] =
             'insert into ' .
@@ -88,16 +83,7 @@ class QueryBuilder
             ' values ' .
             $this->formatInsert(
                 $this->makePlaceholders($params)
-            //$params
             );
-
-        //echo $this->query['insert'];
-
-        /*echo '<br>';
-        print_r($this->extractParams([[1, 2, 3], [4, 5, 6], [7, 8, 9]]));
-        echo '<br>';
-        print_r($this->makePlaceholders([[1, 2, 3], [4, 5, 6], [7, 8, 9]]));*/
-
 
         return $this->prepareAndExecute(
             $this->extractParams($params)
@@ -111,9 +97,6 @@ class QueryBuilder
      */
     public function insert(string $tableName, array $insert): bool
     {
-
-        //var_dump($this->formatInsert([array_keys($insert)]));
-        //echo '<br>';
         $namedPlaceholders = $this->makeNamedPlaceholders(array_keys($insert));
 
 
@@ -125,7 +108,6 @@ class QueryBuilder
             ' values ' .
             $this->formatInsert([$namedPlaceholders]);
 
-        //echo '<br>'. $this->query['insert'] . '<br>';
 
         return $this->prepareAndExecute($insert);
 
@@ -144,7 +126,7 @@ class QueryBuilder
     {
         $placeholders = $params;
 
-        array_walk_recursive($placeholders, function (&$item, $key){
+        array_walk_recursive($placeholders, function (&$item, $key) {
             $item = '?';
         });
 
@@ -163,7 +145,6 @@ class QueryBuilder
         $result = [];
         //use нужен чтобы можно было использовать родительскую переменную
         array_walk_recursive($params, function ($item, $key) use (&$result) {
-            //echo '<br>' . $key . ' ' . $item . '<br>';
             $result[] = $item;
         });
 
@@ -176,9 +157,6 @@ class QueryBuilder
      */
     protected function formatInsert(array $values): string
     {
-        /*echo '<br>';
-        var_dump($values);
-        echo '<br>';*/
         $result = [];
         foreach ($values as $value) {
             $result[] = '(' . implode(', ', $value) . ')';
@@ -197,14 +175,15 @@ class QueryBuilder
 
     public function from(string $table): self
     {
+        $this->mainTableName = $table;
         $this->query['from'] .= ' FROM ' . $table . ' ';
 
         return $this;
     }
 
-    public function join(string $mainTable, string $secondaryTable, string $mainTableField, string $condition, string $secondaryTableField): self
+    public function join(string $secondaryTable, string $mainTableField, string $condition, string $secondaryTableField): self
     {
-        $this->query['join'] .= ' JOIN ' . $secondaryTable . ' ON ' . $mainTable . '.' . $mainTableField .
+        $this->query['join'] .= ' JOIN ' . $secondaryTable . ' ON ' . $this->mainTableName . '.' . $mainTableField .
             ' ' . $condition . ' ' .
             $secondaryTable . '.' . $secondaryTableField . ' ';
 
@@ -219,19 +198,16 @@ class QueryBuilder
         return $this;
     }
 
-    public function where(string $attribute, string $condition, $value): self
+    public function where3(string $attribute, string $condition, $value): self
     {
         $this->query['where'] = ' where ' . $attribute . ' ' . $condition . ' ' . $value . ' ';
 
         return $this;
     }
 
-    public function where2(string $attribute, string $condition,string $namedPlaceholder): self
+    public function where(string $attribute, string $condition, string $namedPlaceholder): self
     {
         $this->where[$attribute] = ['cond' => $condition, 'val' => $namedPlaceholder];
-        /*if (!$this->query['where']) {
-            $this->query['where'][$attribute] = [$condition, $value];
-        }*/
 
         return $this;
     }
@@ -321,10 +297,6 @@ class QueryBuilder
 
     public function getQuery(): string
     {
-        //$strQuery = $this->query;
-        /*if ($strQuery['where']) {
-            $strQuery['where'] = ' where ' . implode(' and ', $this->query['where']) . ' ';
-        }*/
 
         $whereArr = [];
 
@@ -332,13 +304,11 @@ class QueryBuilder
             $cond = $condAndVal['cond'];
             $val = $condAndVal['val'];
             $whereArr[] = $attr . ' ' . $cond . ' ' . $val;
-            //var_dump($value);
         }
 
-        if ($whereArr){
+        if ($whereArr) {
             $this->query['where'] = ' where ' . implode(' and ', $whereArr) . ' ';
         }
-
 
 
         return implode('', $this->query);
@@ -351,38 +321,26 @@ class QueryBuilder
      */
     public function fetch($params = []): AbstractEntity
     {
-
-
         return EntityUtil::resultToEntity($this->className, Database::queryFetchRow($this->getQuery(), $params));
     }
 
-    public function fetchNoConvertToEntity($params = []): array
+    public function fetchToArray($params = []): array
     {
-        //TODO тута что нибудь типо магии, хоп хоп и объект вернется
-        // плюс переименовать в fetch()
-
         return Database::queryFetchRow($this->getQuery(), $params);
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return AbstractEntity[]
      */
-    public function fetchAll($params = []): array
+    public function fetchAll(array $params = []): array
     {
-        echo '<br>' . implode('', $this->query) . '<br>';
-
         $dbResult = Database::queryFetchAll($this->getQuery(), $params) ?: [];
 
-        echo $this->getQuery() . '<br>';
-        var_dump($dbResult);
-        echo ' это до меня было <br>';
-
-        //TODO доделать как fetch()
-        return EntityUtil::resultToListOfEntities($this->className, []);
+        return EntityUtil::resultToListOfEntities($this->className, $dbResult);
     }
 
-    //TODO сделать выше так же
+
     public function fetchAllToArray($params = []): array
     {
         return Database::queryFetchAll($this->getQuery(), $params);
@@ -394,10 +352,5 @@ class QueryBuilder
         return Database::prepareAndExecute($this->getQuery(), $params);
     }
 
-    public function prepareAndInsert($params = []): int
-    {
-
-        return 1;
-    }
 
 }
