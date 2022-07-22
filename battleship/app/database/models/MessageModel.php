@@ -17,17 +17,12 @@ class MessageModel extends AbstractModel
 
     public function query(): QueryBuilder
     {
-        return (new QueryBuilder())->from($this->tableName);
+        return (new QueryBuilder(MessageEntity::class))->from($this->tableName);
     }
 
-    /**
-     * в парамс должна быть струтура скобок [[1,2],[],...] => (1,2),(),...
-     * @param array $params здесь должны быть параметры [[1,2,3],...] => (1,2,3),...
-     * @return bool
-     */
+
     public function insert(array $params, array $tableFields = []): bool
     {
-        //var_dump($tableFields ? $tableFields : $this->tableFields);
         return (new QueryBuilder())->insert($this->tableName, $params);
     }
 
