@@ -13,7 +13,7 @@ Router::route('POST', ['/api/status/(\d+)/(.+)'], [Con\GameController::class, 'g
 
 Router::route('POST', ['/api/place-ship/(\d+)/(.+)'], [Con\PlacementController::class, 'placeShip']);
 
-Router::route('POST', ['/api/clear-field/(\d+)/(.+)/'], [Con\PlacementController::class, 'clearField']);
+Router::route('POST', ['/api/clear-field/(\d+)/(.+)'], [Con\PlacementController::class, 'clearField']);
 
 Router::route('POST', ['/api/ready/(\d+)/(.+)/'], [Con\GameController::class, 'setStatus']);
 
