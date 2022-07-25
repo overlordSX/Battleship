@@ -102,7 +102,7 @@ class QueryBuilder
 
     }
 
-    public function update(string $tableName, string $attribute, string $condition, mixed $oldValue, mixed $newValue): bool
+    public function update(string $tableName, string $attribute, string $condition, mixed $oldValue, mixed $newValue): static
     {
         $this->query['update'] = 'update ' . $tableName . ' ';
         $this->query['set'] = ' set ' . $this->prepareSet([$attribute => ':newValue']) . ' ';
@@ -110,7 +110,7 @@ class QueryBuilder
 
         $this->queryParams['newValue'] = $newValue;
 
-        return $this->prepareAndExecute();
+        return $this;
     }
 
     public function delete(string $tableName, string $attribute, string $condition, mixed $value): bool
