@@ -3,11 +3,16 @@
 namespace Battleship\App\Controllers;
 
 use Battleship\App\Database\Model\GameStatusModel;
+use Battleship\App\Database\Model\PlayerModel;
 use Battleship\App\Database\Model\ShipModel;
 use Battleship\App\Database\QueryBuilder;
+use Exception;
 
 class DatabaseController implements ControllerInterface
 {
+    /**
+     * @throws Exception
+     */
     public function createTables(): void
     {
         $queryBuilder = new QueryBuilder();
@@ -32,7 +37,6 @@ class DatabaseController implements ControllerInterface
 ) engine = InnoDB;
 ')->
         prepareAndExecute());
-//TODO тут нужно сделать invite_code уникальным, да и id игрока тоже
         var_dump($queryBuilder->
         selectRow('
         create table if not exists game
@@ -127,35 +131,6 @@ class DatabaseController implements ControllerInterface
         prepareAndExecute());
 
 
-        /*echo '<br>';
-
-        $table = [
-            'game_status',
-            'player',
-            'game',
-            'message',
-            'ship',
-            'game_field',
-            'ship_placement',
-            'shot'
-        ];
-
-        foreach ($table as $name) {
-            echo $name . "<br>";
-            $columns = $queryBuilder
-                ->selectRow('SHOW columns from ' . $name )->fetchAll();
-            //print_r($columns);
-            $requiredFields = [];
-            foreach ($columns as $row) {
-                //var_dump($row['Extra'] !== 'auto_increment');
-                if (empty($row['Extra'])) {
-                    $requiredFields[] = $row['Field'];
-                }
-            }
-
-            print_r($requiredFields);
-            echo '<br>';
-        }*/
 
         $shipModel = new ShipModel();
 
@@ -182,7 +157,7 @@ class DatabaseController implements ControllerInterface
 
         header('Content-Type: application/json');
 
-        var_dump($shipModel->query()->select('*')->fetchAll());
+        //var_dump($shipModel->query()->select('*')->fetchAll());
 
         $gameStatusModel = new GameStatusModel();
 
@@ -197,10 +172,19 @@ class DatabaseController implements ControllerInterface
             $gameStatusModel->insert(['status' => $status, 'description' => $description]);
         }
 
-        var_dump($gameStatusModel->query()->select('*')->fetchAll());
+        //var_dump($gameStatusModel->query()->select('*')->fetchAll());
+
+        $player = new PlayerModel();
 
 
-        //TODO DELETE
+        //TODO по сути проверка на существование игрока, если 1 => есть
+        //var_dump($player->query()->where('id', '=',6)->selectCountRows()->fetchCount());
+
+        var_dump($player->query()->where('id', '=', 7)->select()->fetch());
+        var_dump($player->update('code', '=', 'БОЛЬШОЙ', 'ГИГАНТ'));
+        var_dump($player->query()->where('id', '=', 7)->select()->fetch());
+
+        //TODO DELETE ALL TABLES
         //var_dump($queryBuilder->clear()->selectRow('drop table if exists shot, ship_placement, game_field, ship, message, game, player, game_status')->prepareAndExecute());
 
     }
