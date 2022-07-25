@@ -47,23 +47,20 @@ class Router
      */
     public static function execute(string $url)
     {
-        //echo $url . '<br>';
 
         $found = false;
         foreach (self::$routes as $pattern => $routeParams) {
             if (preg_match($pattern, $url, $params) and $routeParams['requestedMethod'] === $_SERVER['REQUEST_METHOD']) {
                 array_shift($params);
-                //echo $routeParams;
 
-                //var_dump( $params);
                 $found = true;
                 return call_user_func_array($routeParams['callback'], array_values($params));
             }
         }
-        /*if (!$found) {
+        if (!$found) {
             header('Location: /error-404');
             die();
-        }*/
+        }
     }
 
 }
