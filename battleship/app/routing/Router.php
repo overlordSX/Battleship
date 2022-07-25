@@ -48,16 +48,17 @@ class Router
     public static function execute(string $url)
     {
 
-        $found = false;
+        $isFound = false;
         foreach (self::$routes as $pattern => $routeParams) {
             if (preg_match($pattern, $url, $params) and $routeParams['requestedMethod'] === $_SERVER['REQUEST_METHOD']) {
                 array_shift($params);
 
-                $found = true;
+                //TODO он мне говорит что локальная переменная, а как достучаться до той что выше?
+                $isFound = true;
                 return call_user_func_array($routeParams['callback'], array_values($params));
             }
         }
-        if (!$found) {
+        if (!$isFound) {
             header('Location: /error-404');
             die();
         }
