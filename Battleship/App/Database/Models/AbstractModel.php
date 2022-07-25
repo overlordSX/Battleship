@@ -39,9 +39,9 @@ abstract class AbstractModel
      * @param string $condition
      * @param array $oldValue
      * @param array $newValue
-     * @return bool успешно или нет
+     * @return QueryBuilder успешно или нет
      */
-    public function update(string $attribute, string $condition, mixed $oldValue, mixed $newValue): bool
+    public function update(string $attribute, string $condition, mixed $oldValue, mixed $newValue): QueryBuilder
     {
         return $this->getQueryBuilder()->update($this->tableName, $attribute, $condition, $oldValue, $newValue);
     }
