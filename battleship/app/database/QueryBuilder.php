@@ -12,8 +12,11 @@ class QueryBuilder
             'groupBy' => '',
             'having' => '',
             'orderBy' => '',
-            'limitOffset' => ''
+            'limit' => '',
+            'offset' => ''
         ];
+
+    protected array $queryParams = [];
 
     protected string $className;
     protected string $mainTableName;
@@ -21,23 +24,12 @@ class QueryBuilder
     public function __construct(string $className = '')
     {
         if (!empty($className) and !is_subclass_of($className, AbstractEntity::class)) {
-            //var_dump($className);
-            throw new Exception('Такого класса сущности нет');
+            throw new Exception('Класс не является подклассом абстрактной сущности');
         }
 
         $this->className = $className ?: '';
     }
 
-    /*[
-    //'codeMY' => ['=', 'qwe'],
-    /*'/*code' => 'qwe',
-    'id' => '1',
-    'logic' => 'or',
-    [
-        'code' => 'qwe',
-        'id' => '1',
-    ],
-    ],*/
 
     //TODO №1 либо как то так, либо where(может еще что то) отдельно, а остальное в query
 
@@ -57,7 +49,7 @@ class QueryBuilder
 
     protected array $where = [];
 
-    public function clear(): self
+    public function clear(): static
     {
         foreach ($this->query as $key => $value) {
             $this->query[$key] = '';
@@ -85,9 +77,9 @@ class QueryBuilder
                 $this->makePlaceholders($params)
             );
 
-        return $this->prepareAndExecute(
-            $this->extractParams($params)
-        );
+        $this->queryParams = $this->extractParams($params);
+
+        return $this->prepareAndExecute();
     }
 
     /**
@@ -108,9 +100,23 @@ class QueryBuilder
             ' values ' .
             $this->formatInsert([$namedPlaceholders]);
 
+        $this->queryParams = $insert;
 
-        return $this->prepareAndExecute($insert);
+        return $this->prepareAndExecute();
 
+    }
+
+    public function update(string $tableName, string $attribute, mixed $oldValue, mixed $newValue): bool
+    {
+        //TODO realize update
+        return true;
+    }
+
+    public function delete(string $tableName, string $attribute, mixed $value): bool
+    {
+
+        //TODO realize delete
+        return true;
     }
 
     protected function makeNamedPlaceholders(array $keys): array
@@ -135,7 +141,7 @@ class QueryBuilder
 
 
     /**
-     * Ет я нашел :D
+     * Делает из массива с неограниченной вложенностью -> одномерный массив
      *
      * @param array $params
      * @return array
@@ -143,7 +149,6 @@ class QueryBuilder
     protected function extractParams(array $params): array
     {
         $result = [];
-        //use нужен чтобы можно было использовать родительскую переменную
         array_walk_recursive($params, function ($item, $key) use (&$result) {
             $result[] = $item;
         });
@@ -152,8 +157,8 @@ class QueryBuilder
     }
 
     /**
-     * @param array $values [[1,2,3]]
-     * @return string
+     * @param array $values [[1,2,3],...]
+     * @return string (1,2,3),..
      */
     protected function formatInsert(array $values): string
     {
@@ -173,7 +178,7 @@ class QueryBuilder
     }
 
 
-    public function from(string $table): self
+    public function from(string $table): static
     {
         $this->mainTableName = $table;
         $this->query['from'] .= ' FROM ' . $table . ' ';
@@ -181,8 +186,12 @@ class QueryBuilder
         return $this;
     }
 
-    public function join(string $secondaryTable, string $mainTableField, string $condition, string $secondaryTableField): self
-    {
+    public function join(
+        string $secondaryTable,
+        string $mainTableField,
+        string $condition,
+        string $secondaryTableField
+    ): static {
         $this->query['join'] .= ' JOIN ' . $secondaryTable . ' ON ' . $this->mainTableName . '.' . $mainTableField .
             ' ' . $condition . ' ' .
             $secondaryTable . '.' . $secondaryTableField . ' ';
@@ -191,39 +200,36 @@ class QueryBuilder
         return $this;
     }
 
-    public function joinFromRow($joinRow): self
+    public function joinFromRow($joinRow): static
     {
         $this->query['join'] .= $joinRow;
 
         return $this;
     }
 
-    public function where3(string $attribute, string $condition, $value): self
-    {
-        $this->query['where'] = ' where ' . $attribute . ' ' . $condition . ' ' . $value . ' ';
 
-        return $this;
-    }
+    public function where(
+        string $attribute,
+        string $condition,
+        mixed $value
+    ): static {
+        $namedPlaceholder = ':' . $attribute . 'Where';
+        $this->queryParams[$namedPlaceholder] = $value;
 
-    public function where(string $attribute, string $condition, string $namedPlaceholder): self
-    {
         $this->where[$attribute] = ['cond' => $condition, 'val' => $namedPlaceholder];
 
         return $this;
     }
 
-    public function whereFromRow(string $whereRow): self
+    public function whereFromRow(string $whereRow): static
     {
         $this->query['where'] = $whereRow;
 
         return $this;
     }
 
-    public function groupBy(string ...$fields): self
+    public function groupBy(string ...$fields): static
     {
-        /*if (empty($this->query['groupBy'])) {
-
-        }*/
 
         $this->query['groupBy'] = ' group by ';
 
@@ -237,7 +243,7 @@ class QueryBuilder
         return $this;
     }
 
-    public function having(string $attribute, string $condition, string $value): self
+    public function having(string $attribute, string $condition, string $value): static
     {
         $this->query['having'] = ' having ' . $attribute . ' ' . $condition . ' ' . $value . ' ';
 
@@ -245,35 +251,45 @@ class QueryBuilder
         return $this;
     }
 
-    public function havingFromRow(string $havingRow): self
+    public function havingFromRow(string $havingRow): static
     {
         $this->query['having'] = ' having ' . $havingRow;
 
         return $this;
     }
 
-    public function selectRow($selectRow): self
+    public function selectRow($selectRow): static
     {
         $this->query['select'] = $selectRow;
 
         return $this;
     }
 
-    public function select(string ...$fields): self
+    public function selectCountRows(): static
+    {
+        $this->query['select'] = 'select count(*) as count ';
+
+        return $this;
+    }
+
+    public function select(string ...$fields): static
     {
         $this->query['select'] = 'select ';
 
-
-        $count = 0;
-        foreach ($fields as $field) {
-            $count++;
-            $this->query['select'] .= $count > 1 ? ' , ' . $field : $field . ' ';
+        if (empty($fields)) {
+            $this->query['select'] .= '* ';
+        } else {
+            $count = 0;
+            foreach ($fields as $field) {
+                $count++;
+                $this->query['select'] .= $count > 1 ? ' , ' . $field : $field . ' ';
+            }
         }
 
         return $this;
     }
 
-    public function orderBy(string $attribute, string $order): self
+    public function orderBy(string $attribute, string $order): static
     {
         if (empty($this->query['orderBy'])) {
             $this->query['orderBy'] .= ' order by ';
@@ -286,10 +302,16 @@ class QueryBuilder
         return $this;
     }
 
-    //TODO разнести на отдельные
-    public function limitOffset(string $limit, string $offset): self
+    public function limit(string $limit): static
     {
-        $this->query['limitOffset'] = ' limit ' . $limit . ' offset ' . $offset;
+        $this->query['limit'] = ' limit ' . $limit;
+
+        return $this;
+    }
+
+    public function offset(string $offset): static
+    {
+        $this->query['offset'] = ' offset ' . $offset;
 
         return $this;
     }
@@ -319,37 +341,48 @@ class QueryBuilder
      * @param $params
      * @return AbstractEntity
      */
-    public function fetch($params = []): AbstractEntity
+    public function fetch(): AbstractEntity
     {
-        return EntityUtil::resultToEntity($this->className, Database::queryFetchRow($this->getQuery(), $params));
+        return EntityUtil::resultToEntity(
+            $this->className,
+            Database::queryFetchRow(
+                $this->getQuery(),
+                $this->queryParams
+            )
+        );
     }
 
-    public function fetchToArray($params = []): array
+    public function fetchToArray(): array
     {
-        return Database::queryFetchRow($this->getQuery(), $params);
+        return Database::queryFetchRow($this->getQuery(), $this->queryParams);
     }
 
     /**
      * @param array $params
      * @return AbstractEntity[]
      */
-    public function fetchAll(array $params = []): array
+    public function fetchAll(): array
     {
-        $dbResult = Database::queryFetchAll($this->getQuery(), $params) ?: [];
+        $dbResult = Database::queryFetchAll($this->getQuery(), $this->queryParams) ?: [];
 
         return EntityUtil::resultToListOfEntities($this->className, $dbResult);
     }
 
 
-    public function fetchAllToArray($params = []): array
+    public function fetchAllToArray(): array
     {
-        return Database::queryFetchAll($this->getQuery(), $params);
+        return Database::queryFetchAll($this->getQuery(), $this->queryParams);
     }
 
-
-    public function prepareAndExecute($params = []): bool
+    public function fetchCount(): int
     {
-        return Database::prepareAndExecute($this->getQuery(), $params);
+        return Database::queryFetchRow($this->getQuery(), $this->queryParams)['count'];
+    }
+
+    public function prepareAndExecute(): bool
+    {
+        //var_dump($this->queryParams);
+        return Database::prepareAndExecute($this->getQuery(), $this->queryParams);
     }
 
 
