@@ -33,12 +33,12 @@ abstract class AbstractModel
      * @param array $newValue
      * @return bool успешно или нет
      */
-    public function update(array $attribute, array $oldValue, array $newValue): bool
+    public function update(string $attribute, mixed $oldValue, mixed $newValue): bool
     {
         return (new QueryBuilder($this->entityClassName))->update($this->tableName, $attribute, $oldValue, $newValue);
     }
 
-    public function delete(array $attribute, array $value): bool
+    public function delete(string $attribute, mixed $value): bool
     {
         return (new QueryBuilder($this->entityClassName))->delete($this->tableName, $attribute, $value);
     }
