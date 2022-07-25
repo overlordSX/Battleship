@@ -1,5 +1,7 @@
 <?php
 
+namespace Battleship\App\Controllers;
+
 class ChatController implements ControllerInterface
 {
 

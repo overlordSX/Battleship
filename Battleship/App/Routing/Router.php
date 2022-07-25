@@ -1,5 +1,10 @@
 <?php
 
+namespace Battleship\App\Routing;
+
+use Battleship\App\Controllers\ControllerInterface;
+use Exception;
+
 /**
  * Класс реализующий фукнционал роутинга
  */
@@ -58,10 +63,10 @@ class Router
                 return call_user_func_array($routeParams['callback'], array_values($params));
             }
         }
-        if (!$isFound) {
+        /*if (!$isFound) {
             header('Location: /error-404');
             die();
-        }
+        }*/
     }
 
 }

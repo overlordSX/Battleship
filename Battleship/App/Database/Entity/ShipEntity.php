@@ -1,5 +1,7 @@
 <?php
 
+namespace Battleship\App\Database\Entity;
+
 class ShipEntity extends AbstractEntity
 {
     protected ?int $id;

@@ -1,5 +1,7 @@
 <?php
 
+namespace Battleship\App\Database\Entity;
+
 /**
  * есть следующие поля:
  * id, turn, game_status_id, first_player_id, second_player_id

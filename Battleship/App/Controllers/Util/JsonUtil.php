@@ -1,5 +1,8 @@
 <?php
 
+namespace Battleship\App\Controllers\Util;
+
+
 class JsonUtil
 {
     public static function makeAnswer(array $data, int $depth = 512): void

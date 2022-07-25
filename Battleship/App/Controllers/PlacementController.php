@@ -1,7 +1,21 @@
 <?php
 
+namespace Battleship\App\Controllers;
+
+
+use Battleship\App\Controllers\Util\JsonUtil;
+use Battleship\App\Database\Entity\PlayerEntity;
+use Battleship\App\Database\Model\GameFieldModel;
+use Battleship\App\Database\Model\GameModel;
+use Battleship\App\Database\Model\PlayerModel;
+use Battleship\App\Database\Model\ShipModel;
+use Battleship\App\Database\Model\ShipPlacementModel;
+
 class PlacementController implements ControllerInterface
 {
+    /**
+     * @throws \Exception
+     */
     public function placeShip(int $gameId, string $playerCode)
     {
 

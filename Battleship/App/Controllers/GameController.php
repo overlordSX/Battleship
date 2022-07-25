@@ -1,5 +1,20 @@
 <?php
 
+namespace Battleship\App\Controllers;
+
+
+use Battleship\App\Controllers\Util\JsonUtil;
+use Battleship\App\Database\Entity\GameEntity;
+use Battleship\App\Database\Entity\GameFieldEntity;
+use Battleship\App\Database\Entity\PlayerEntity;
+use Battleship\App\Database\Entity\ShipPlacementEntity;
+use Battleship\App\Database\Model\GameFieldModel;
+use Battleship\App\Database\Model\GameModel;
+
+use Battleship\App\Database\Model\PlayerModel;
+use Battleship\App\Database\Model\ShipPlacementModel;
+use Exception;
+
 class GameController implements ControllerInterface
 {
     /**
@@ -10,6 +25,7 @@ class GameController implements ControllerInterface
      *      code игрока,
      *      invite код доступа для другого игрока
      *      success статус
+     * @throws Exception
      */
     public function startNewGame(): void
     {
@@ -28,7 +44,6 @@ class GameController implements ControllerInterface
             ->query()
             ->select()
             ->where('code', '=', $playerCode)
-            //->getQuery();
             ->fetch();
 
         /**
@@ -85,8 +100,9 @@ class GameController implements ControllerInterface
      * @param $gameId
      * @param $playerCode
      * @return void
+     * @throws Exception
      */
-    public function getStatus($gameId, $playerCode)
+    public function getStatus($gameId, $playerCode): void
     {
 
         $gameModel = new GameModel();

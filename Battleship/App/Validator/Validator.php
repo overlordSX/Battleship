@@ -1,5 +1,7 @@
 <?php
 
+namespace Battleship\App\Validator;
+
 class Validator
 {
     protected array $fieldsWithErrors = [];

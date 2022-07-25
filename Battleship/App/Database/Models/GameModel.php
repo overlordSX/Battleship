@@ -1,5 +1,9 @@
 <?php
 
+namespace Battleship\App\Database\Model;
+
+use Battleship\App\Database\Entity\GameEntity;
+
 /**
  * Аттрибуты:
  * invite_code,

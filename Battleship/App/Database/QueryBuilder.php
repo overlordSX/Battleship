@@ -1,5 +1,13 @@
 <?php
 
+namespace Battleship\App\Database;
+
+
+
+use Battleship\App\Database\Entity\AbstractEntity;
+use Battleship\App\Database\Util\EntityUtil;
+use Exception;
+
 class QueryBuilder
 {
     protected array $query =

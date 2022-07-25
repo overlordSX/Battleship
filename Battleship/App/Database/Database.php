@@ -1,5 +1,10 @@
 <?php
 
+namespace Battleship\App\Database;
+
+use Exception;
+use PDO;
+
 class Database
 {
     protected static ?Database $_instance = null;

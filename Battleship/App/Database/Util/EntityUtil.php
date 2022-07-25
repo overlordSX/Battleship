@@ -1,5 +1,10 @@
 <?php
 
+namespace Battleship\App\Database\Util;
+
+
+use Battleship\App\Database\Entity\AbstractEntity;
+
 class EntityUtil
 {
     /**

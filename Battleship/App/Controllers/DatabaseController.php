@@ -1,5 +1,11 @@
 <?php
 
+namespace Battleship\App\Controllers;
+
+use Battleship\App\Database\Model\GameStatusModel;
+use Battleship\App\Database\Model\ShipModel;
+use Battleship\App\Database\QueryBuilder;
+
 class DatabaseController implements ControllerInterface
 {
     public function createTables(): void
@@ -196,27 +202,6 @@ class DatabaseController implements ControllerInterface
 
         //TODO DELETE
         //var_dump($queryBuilder->clear()->selectRow('drop table if exists shot, ship_placement, game_field, ship, message, game, player, game_status')->prepareAndExecute());
-
-        //QueryBuilderUtil::getTableColumns('player')
-
-
-        /*$tableNames =
-            [
-                'player',
-                'game_status',
-                'game',
-                'message',
-                'ship',
-                'ship_placement',
-                'game_field',
-                'shot'
-            ];
-        $getQuery = [];
-        foreach (['create', 'drop'] as $type) {
-            $getQuery['action'] = $type;
-            foreach ($tableNames as $tableName) {
-                $getQuery['table'] = $tableName;
-        */
 
     }
 
