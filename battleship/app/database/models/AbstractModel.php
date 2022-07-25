@@ -3,33 +3,43 @@
 abstract class AbstractModel
 {
     protected string $tableName;
-    protected array $tableFields;
+    protected string $entityClassName;
+
+    public function getQueryBuilder()
+    {
+        return new QueryBuilder();
+    }
 
     /**
      * @return QueryBuilder ->from($tableName)
      */
-    abstract public function query(): QueryBuilder;
+    public function query(): QueryBuilder
+    {
+        return (new QueryBuilder($this->entityClassName))->from($this->tableName);
+    }
 
     /**
      * @param array $params
      * @return bool успешно или нет
      */
-    abstract public function insert(array $params): bool;
+    public function insert(array $params): bool
+    {
+        return (new QueryBuilder($this->entityClassName))->insert($this->tableName, $params);
+    }
 
     /**
      * @param array $attribute
-     * @param array $value
-     * @param array $updateValue
-     * @return QueryBuilder ->update($tableName)
+     * @param array $oldValue
+     * @param array $newValue
+     * @return bool успешно или нет
      */
-    abstract public function update(/*array $attribute, array $value, array $updateValue*/): QueryBuilder;
+    public function update(array $attribute, array $oldValue, array $newValue): bool
+    {
+        return (new QueryBuilder($this->entityClassName))->update($this->tableName, $attribute, $oldValue, $newValue);
+    }
 
-    /**
-     * @param array $attribute
-     * @param array $value
-     * @return QueryBuilder ->delete($tableName)
-     */
-    abstract public function delete(/*array $attribute, array $value*/): QueryBuilder;
-
-    abstract public function clear(): self;
+    public function delete(array $attribute, array $value): bool
+    {
+        return (new QueryBuilder($this->entityClassName))->delete($this->tableName, $attribute, $value);
+    }
 }
