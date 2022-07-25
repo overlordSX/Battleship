@@ -19,62 +19,55 @@ class GameController implements ControllerInterface
 
 
         $playerModel = new PlayerModel();
-        $playerModel
-            ->insert(['code' => $playerCode]);
-        $playerModel
-            ->clear()
-            ->insert(['code' => $inviteCode]);
+
+        $playerModel->insert(['code' => $playerCode]);
+        $playerModel->insert(['code' => $inviteCode]);
 
 
         $firstPlayer = $playerModel
-            ->clear()
             ->query()
-            ->select('*')
-            ->where('code', '=', ':code')
-            ->fetch(['code' => $playerCode]);
+            ->select()
+            ->where('code', '=', $playerCode)
+            //->getQuery();
+            ->fetch();
 
         /**
          * @var $secondPlayer PlayerEntity
          */
         $secondPlayer = $playerModel
-            ->clear()
             ->query()
-            ->select('*')
-            ->where('code', '=', ':code')
-            ->fetch(['code' => $inviteCode]);
+            ->select()
+            ->where('code', '=', $inviteCode)
+            ->fetch();
 
         $gameModel = new GameModel();
-        $gameModel
-            ->insert(
-                [
-                    'turn' => $this->getRandomTurn(),
-                    'game_status_id' => 1,
-                    'first_player_id' => $firstPlayer->getId(),
-                    'second_player_id' => $secondPlayer->getId()
-                ]
-            );
+        $gameModel->insert([
+            'turn' => $this->getRandomTurn(),
+            'game_status_id' => 1,
+            'first_player_id' => $firstPlayer->getId(),
+            'second_player_id' => $secondPlayer->getId()
+        ]);
 
         /**
          * @var $currentGame GameEntity
          */
         $currentGame = $gameModel
-            ->clear()
             ->query()
             ->select('id')
-            ->where('first_player_id', '=', ':id')
-            ->fetch(['id' => $firstPlayer->getId()]);
+            ->where('first_player_id', '=', $firstPlayer->getId())
+            ->fetch();
 
-
-        //TODO так же тут должны создаваться game_field
-        // для этой игры, для каждого игрока
 
         $gameFieldModel = new GameFieldModel();
 
-        $gameFieldModel
-            ->insert(['game_id' => $currentGame->getId(), 'player_id' => $firstPlayer->getId()]);
-        $gameFieldModel
-            ->clear()
-            ->insert(['game_id' => $currentGame->getId(), 'player_id' => $secondPlayer->getId()]);
+        $gameFieldModel->insert([
+            'game_id' => $currentGame->getId(),
+            'player_id' => $firstPlayer->getId()
+        ]);
+        $gameFieldModel->insert([
+            'game_id' => $currentGame->getId(),
+            'player_id' => $secondPlayer->getId()
+        ]);
 
         $data =
             [
@@ -103,9 +96,9 @@ class GameController implements ControllerInterface
          */
         $currentGame = $gameModel
             ->query()
-            ->select('*')
-            ->where('id', '=', ':gameId')
-            ->fetch(['gameId' => $gameId]);
+            ->select()
+            ->where('id', '=', $gameId)
+            ->fetch();
 
         $playerModel = new PlayerModel();
 
@@ -114,9 +107,9 @@ class GameController implements ControllerInterface
          */
         $currentPlayer = $playerModel
             ->query()
-            ->where('code', '=', ':code')
-            ->select('*')
-            ->fetch(['code' => $playerCode]);
+            ->where('code', '=', $playerCode)
+            ->select()
+            ->fetch();
 
         $enemyId = $currentGame->getFirstPlayerId() === $currentPlayer->getId() ?
             $currentGame->getSecondPlayerId() : $currentGame->getFirstPlayerId();
@@ -125,11 +118,10 @@ class GameController implements ControllerInterface
          * @var $enemyPlayer PlayerEntity
          */
         $enemyPlayer = $playerModel
-            ->clear()
             ->query()
-            ->where('id', '=', ':id')
-            ->select('*')
-            ->fetch(['id' => $enemyId]);
+            ->where('id', '=', $enemyId)
+            ->select()
+            ->fetch();
 
 
         $gameFieldModel = new GameFieldModel();
@@ -139,32 +131,21 @@ class GameController implements ControllerInterface
          */
         $myGameField = $gameFieldModel
             ->query()
-            ->where('game_id', '=', ':gameId')
-            ->where('player_id', '=', ':playerId')
-            ->select('*')
-            ->fetch(
-                [
-                    'gameId' => $currentGame->getId(),
-                    'playerId' => $currentPlayer->getId()
-                ]
-            );
+            ->where('game_id', '=', $currentGame->getId())
+            ->where('player_id', '=', $currentPlayer->getId())
+            ->select()
+            ->fetch();
 
 
         /**
          * @var $enemyGameField GameFieldEntity
          */
         $enemyGameField = $gameFieldModel
-            ->clear()
             ->query()
-            ->where('game_id', '=', ':gameId')
-            ->where('player_id', '=', ':playerId')
-            ->select('*')
-            ->fetch(
-                [
-                    'gameId' => $currentGame->getId(),
-                    'playerId' => $enemyPlayer->getId()
-                ]
-            );
+            ->where('game_id', '=', $currentGame->getId())
+            ->where('player_id', '=', $enemyPlayer->getId())
+            ->select()
+            ->fetch();
 
 
         $shipPlacementModel = new ShipPlacementModel();
@@ -181,21 +162,20 @@ class GameController implements ControllerInterface
          */
         $myShipPlacedCount = $shipPlacementModel
             ->query()
-            ->where('game_field_id', '=', ':id')
-            ->selectRow('select count(*) as count')
-            ->fetchToArray(['id' => $myGameField->getId()])['count'];
+            ->where('game_field_id', '=', $myGameField->getId())
+            ->selectCountRows()
+            ->fetchCount();
 
         if ($myShipPlacedCount) {
             /**
              * @var $myPlacedShips ShipPlacementEntity[]
              */
             $myPlacedShips = $shipPlacementModel
-                ->clear()
                 ->query()
                 ->join('ship', 'ship_id', '=', 'id')
-                ->where('game_field_id', '=', ':id')
-                ->selectRow('select *')
-                ->fetchAll(['id' => $myGameField->getId()]);
+                ->where('game_field_id', '=', $myGameField->getId())
+                ->select()
+                ->fetchAll();
 
             foreach ($myPlacedShips as $placedShip) {
                 $x = $placedShip->getCoordinateX();
@@ -229,11 +209,10 @@ class GameController implements ControllerInterface
 
 
         $enemyShipPlacedCount = $shipPlacementModel
-            ->clear()
             ->query()
-            ->where('game_field_id', '=', ':id')
-            ->selectRow('select count(*) as count')
-            ->fetchToArray(['id' => $enemyGameField->getId()])['count'];
+            ->where('game_field_id', '=', $enemyGameField->getId())
+            ->selectCountRows()
+            ->fetchCount();
 
 
         if ($enemyShipPlacedCount) {
@@ -241,12 +220,11 @@ class GameController implements ControllerInterface
              * @var $enemyPlacedShips ShipPlacementEntity[]
              */
             $enemyPlacedShips = $shipPlacementModel
-                ->clear()
                 ->query()
                 ->join('ship', 'ship_id', '=', 'id')
-                ->where('game_field_id', '=', ':id')
-                ->selectRow('select *')
-                ->fetchAll(['id' => $enemyGameField->getId()]);
+                ->where('game_field_id', '=', $enemyGameField->getId())
+                ->select()
+                ->fetchAll();
 
             foreach ($enemyPlacedShips as $placedShip) {
                 $x = $placedShip->getCoordinateX();
@@ -314,14 +292,15 @@ class GameController implements ControllerInterface
         return rand(-100, 100) > 0;
     }
 
-    /**
-     * @return string [[playerCode], [inviteCode]]
-     */
     protected function getNewGameCode(): string
     {
-        /*var_dump(md5(microtime(true)));
-        var_dump(md5(microtime(true)));*/
+
         return uniqid();
+    }
+
+    protected function getNewGameCodeMd5(): string
+    {
+        return md5(microtime(true));
     }
 
     /**
@@ -330,11 +309,7 @@ class GameController implements ControllerInterface
      */
     protected function getEmptyPlacementArray(): array
     {
-        return array_fill(
-            0,
-            10,
-            array_fill(0, 10, ['empty', 0])
-        );
+        return array_fill(0, 10, array_fill(0, 10, ['empty', 0]));
     }
 
 }
