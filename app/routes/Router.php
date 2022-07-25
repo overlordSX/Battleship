@@ -25,11 +25,10 @@ class Router
      * @param string $method
      * @throws Exception
      */
-    //TODO сделать ClassName и 'method'
     public static function route(array $patternArray, string $className, string $method): void
     {
-                if (!is_subclass_of($className, ControllerInterface::class)) {
-            throw new Exception('Такого контроллера нет');
+        if (!is_subclass_of($className, ControllerInterface::class)) {
+            throw new Exception('Класс контроллера не наследует интерфейс контроллера');
         }
 
         $class = new $className;
@@ -42,9 +41,9 @@ class Router
 
 
     /**
-     * @var string $url заправшиваемый url
-     * @var callable $callback
      * @return mixed|void
+     * @var callable $callback
+     * @var string $url заправшиваемый url
      */
     public static function execute(string $url)
     {
