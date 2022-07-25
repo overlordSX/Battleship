@@ -3,7 +3,6 @@
 namespace Battleship\App\Database;
 
 
-
 use Battleship\App\Database\Entity\AbstractEntity;
 use Battleship\App\Database\Util\EntityUtil;
 use Exception;
@@ -13,6 +12,9 @@ class QueryBuilder
     protected array $query =
         [
             'select' => '',
+            'update' => '',
+            'set' => '',
+            'delete' => '',
             'insert' => '',
             'from' => '',
             'join' => '',
@@ -29,31 +31,17 @@ class QueryBuilder
     protected string $className;
     protected string $mainTableName;
 
+    /**
+     * @throws Exception
+     */
     public function __construct(string $className = '')
     {
         if (!empty($className) and !is_subclass_of($className, AbstractEntity::class)) {
             throw new Exception('Класс не является подклассом абстрактной сущности');
         }
-
         $this->className = $className ?: '';
     }
 
-
-    //TODO №1 либо как то так, либо where(может еще что то) отдельно, а остальное в query
-
-    protected array $updateStmt =
-        [
-            'update' => '',
-            'set' => '',
-            'where' => [] // не нужен id нужен, его в where,
-            ////TODO объединить все для инсерта и апдейта
-        ];
-
-    protected array $deleteStmt =
-        [
-            'deleteFrom' => '',
-            'where' => [] // // не нужен id нужен, его в where
-        ];
 
     protected array $where = [];
 
@@ -114,17 +102,24 @@ class QueryBuilder
 
     }
 
-    public function update(string $tableName, string $attribute, mixed $oldValue, mixed $newValue): bool
+    public function update(string $tableName, string $attribute, string $condition, mixed $oldValue, mixed $newValue): bool
     {
-        //TODO realize update
-        return true;
+        $this->query['update'] = 'update ' . $tableName . ' ';
+        $this->query['set'] = ' set ' . $this->prepareSet([$attribute => ':newValue']) . ' ';
+        $this->where($attribute, $condition, $oldValue);
+
+        $this->queryParams['newValue'] = $newValue;
+
+        return $this->prepareAndExecute();
     }
 
-    public function delete(string $tableName, string $attribute, mixed $value): bool
+    public function delete(string $tableName, string $attribute, string $condition, mixed $value): bool
     {
+        $this->query['delete'] = 'delete from ' . $tableName . ' ';
+        $this->where($attribute, $condition, $value);
 
-        //TODO realize delete
-        return true;
+
+        return $this->prepareAndExecute();
     }
 
     protected function makeNamedPlaceholders(array $keys): array
@@ -179,6 +174,22 @@ class QueryBuilder
         return implode(', ', $result);
     }
 
+    /**
+     * подготавливает set для вставки в update
+     * @param array $data
+     * @return string
+     */
+    protected function prepareSet(array $data): string
+    {
+        $setArr = [];
+        foreach ($data as $key => $value) {
+            $setArr[] = ' ' . $key . '=' . $value;
+        }
+
+        return implode(', ', $setArr);
+    }
+
+
     public function insertFromRow(string $insertRow, array $params = []): bool
     {
         $this->query['insert'] = $insertRow;
@@ -199,7 +210,8 @@ class QueryBuilder
         string $mainTableField,
         string $condition,
         string $secondaryTableField
-    ): static {
+    ): static
+    {
         $this->query['join'] .= ' JOIN ' . $secondaryTable . ' ON ' . $this->mainTableName . '.' . $mainTableField .
             ' ' . $condition . ' ' .
             $secondaryTable . '.' . $secondaryTableField . ' ';
@@ -219,7 +231,7 @@ class QueryBuilder
     public function where(
         string $attribute,
         string $condition,
-        mixed $value
+        mixed  $value
     ): static {
         $namedPlaceholder = ':' . $attribute . 'Where';
         $this->queryParams[$namedPlaceholder] = $value;
@@ -345,8 +357,6 @@ class QueryBuilder
     }
 
     /**
-     * @param string $className
-     * @param $params
      * @return AbstractEntity
      */
     public function fetch(): AbstractEntity
@@ -366,7 +376,6 @@ class QueryBuilder
     }
 
     /**
-     * @param array $params
      * @return AbstractEntity[]
      */
     public function fetchAll(): array
@@ -389,7 +398,6 @@ class QueryBuilder
 
     public function prepareAndExecute(): bool
     {
-        //var_dump($this->queryParams);
         return Database::prepareAndExecute($this->getQuery(), $this->queryParams);
     }
 
