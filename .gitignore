@@ -2,4 +2,4 @@
 /app/database/config/config.php
 logs/
 
-/battleship/app/database/config/config.php
+/Battleship/App/Database/Config/config.php
