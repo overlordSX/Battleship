@@ -176,7 +176,7 @@ class DatabaseController implements ControllerInterface
 
         header('Content-Type: application/json');
 
-        var_dump($shipModel->clear()->query()->select('*')->fetchAll());
+        var_dump($shipModel->query()->select('*')->fetchAll());
 
         $gameStatusModel = new GameStatusModel();
 
@@ -188,12 +188,10 @@ class DatabaseController implements ControllerInterface
             ];
 
         foreach ($gameStatuses as $status => $description) {
-            $gameStatusModel
-                ->clear()
-                ->insert(['status' => $status, 'description' => $description]);
+            $gameStatusModel->insert(['status' => $status, 'description' => $description]);
         }
 
-        var_dump($gameStatusModel->clear()->query()->select('*')->fetchAll());
+        var_dump($gameStatusModel->query()->select('*')->fetchAll());
 
 
         //TODO DELETE
