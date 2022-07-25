@@ -7,7 +7,6 @@ class PlacementController implements ControllerInterface
 
         $coordinateX ??= $_POST['x']; //int, 0 <= x <= 9,
         $coordinateY ??= $_POST['y']; //int, 0 <= y <= 9,
-        //var_dump(isset($_POST['ship']));
         $ship ??= $_POST['ship']; // тип-номер корабля можно будет проверить regex ^[1-4]-[1-4]$
         $orientation ??= $_POST['orientation']; // ^(vertical|horizontal)$
 
@@ -25,9 +24,9 @@ class PlacementController implements ControllerInterface
         $gameModel = new GameModel();
         $currentGame = $gameModel
             ->query()
-            ->where('id', '=', ':gameId')
-            ->select('*')
-            ->fetch(['gameId' => $gameId]);
+            ->where('id', '=', $gameId)
+            ->select()
+            ->fetch();
 
 
         //TODO всю игру потому что по id игрока запрос быстрее будет, плюс надо будет проверять что статус игры == 1
@@ -39,26 +38,26 @@ class PlacementController implements ControllerInterface
          */
         $currentPlayer = $playerModel
             ->query()
-            ->where('code', '=', ':code')
-            ->select('*')
-            ->fetch(['code' => $playerCode]);
+            ->where('code', '=', $playerCode)
+            ->select()
+            ->fetch();
 
 
         $gameFieldModel = new GameFieldModel();
         $currentGameField = $gameFieldModel
             ->query()
-            ->where('player_id', '=', ':currentPlayerId')
-            ->select('*')
-            ->fetch(['currentPlayerId' => $currentPlayer->getId()]);
+            ->where('player_id', '=', $currentPlayer->getId())
+            ->select()
+            ->fetch();
 
 
 
         $shipModel = new ShipModel();
         $currentShip = $shipModel
             ->query()
-            ->where('name', '=', ':name')
-            ->select('*')
-            ->fetch(['name' => $ship]);
+            ->where('name', '=', $ship)
+            ->select()
+            ->fetch();
 
 
         //TODO РАЗВОРОТ КОРАБЛЯ
