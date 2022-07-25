@@ -21,8 +21,13 @@ class PlacementController implements ControllerInterface
 
         $coordinateX ??= $_POST['x']; //int, 0 <= x <= 9,
         $coordinateY ??= $_POST['y']; //int, 0 <= y <= 9,
-        $ship ??= $_POST['ship']; // тип-номер корабля можно будет проверить regex ^[1-4]-[1-4]$
+
+        $shipName ??= $_POST['ship']; // тип-номер корабля можно будет проверить regex ^[1-4]-[1-4]$
+
+        //TODO из за того что непонятно откуда берется запятая с фронта
+        $shipName = substr($shipName, 0, 3);
         $orientation ??= $_POST['orientation']; // ^(vertical|horizontal)$
+
 
         if (
             isset($_POST['orientation'])
@@ -34,44 +39,26 @@ class PlacementController implements ControllerInterface
             $orientation = ($_POST['orientation'] === 'horizontal');
         }
 
+        $oldOrientation = !$orientation;
 
         $gameModel = new GameModel();
-        $currentGame = $gameModel
-            ->query()
-            ->where('id', '=', $gameId)
-            ->select()
-            ->fetch();
+        $currentGame = $gameModel->getGameById($gameId);
 
 
         //TODO всю игру потому что по id игрока запрос быстрее будет, плюс надо будет проверять что статус игры == 1
 
 
         $playerModel = new PlayerModel();
-        /**
-         * @var $currentPlayer PlayerEntity
-         */
-        $currentPlayer = $playerModel
-            ->query()
-            ->where('code', '=', $playerCode)
-            ->select()
-            ->fetch();
+
+        $currentPlayer = $playerModel->getPlayerByCode($playerCode);
 
 
         $gameFieldModel = new GameFieldModel();
-        $currentGameField = $gameFieldModel
-            ->query()
-            ->where('player_id', '=', $currentPlayer->getId())
-            ->select()
-            ->fetch();
-
+        $currentGameField = $gameFieldModel->getByGameAndPlayer($gameId, $currentPlayer->getId());
 
 
         $shipModel = new ShipModel();
-        $currentShip = $shipModel
-            ->query()
-            ->where('name', '=', $ship)
-            ->select()
-            ->fetch();
+        $currentShip = $shipModel->getByName($shipName);
 
 
         //TODO РАЗВОРОТ КОРАБЛЯ
@@ -84,23 +71,54 @@ class PlacementController implements ControllerInterface
 
         $shipPlacementModel = new ShipPlacementModel();
 
-        $success['success'] = $shipPlacementModel
-            ->insert(
-                [
+        $isAlreadyPlaced = $shipPlacementModel->query()
+            ->where('game_field_id', '=', $currentGameField->getId())
+            ->where('ship_id', '=', $currentShip->getId())
+            ->selectCountRows()
+            ->fetchCount();
+
+        if ($isAlreadyPlaced) {
+            $success['success'] = $shipPlacementModel
+                ->update('orientation', '=', $oldOrientation, $orientation)
+                ->where('game_field_id', '=', $currentGameField->getId())
+                ->where('ship_id', '=', $currentShip->getId())
+                ->prepareAndExecute();
+        } else {
+            $success['success'] = $shipPlacementModel
+                ->insert([
                     'coordinate_x' => $coordinateX,
                     'coordinate_y' => $coordinateY,
                     'orientation' => $orientation,
                     'ship_id' => $currentShip->getId(),
                     'game_field_id' => $currentGameField->getId()
-                ]
-            );
+                ]);
+        }
+
+
 
         JsonUtil::makeAnswer($success);
 
     }
 
-    public function clearField()
+    /**
+     * @throws \Exception
+     */
+    public function clearField($gameId, $currentPlayerCode)
     {
-        echo "hi, i'm clearField";
+        $playerModel = new PlayerModel();
+
+        $currentPlayer = $playerModel->getPlayerByCode($currentPlayerCode);
+
+
+        $gameFieldModel = new GameFieldModel();
+        $currentGameField = $gameFieldModel->getByGameAndPlayer($gameId, $currentPlayer->getId());
+
+
+        $shipPlacementModel = new ShipPlacementModel();
+
+        $success['success'] = $shipPlacementModel
+            ->delete('game_field_id', '=', $currentGameField->getId());
+
+        JsonUtil::makeAnswer($success);
     }
 }
