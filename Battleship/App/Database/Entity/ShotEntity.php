@@ -2,21 +2,28 @@
 
 namespace Battleship\App\Database\Entity;
 
+/**
+ * Аттрибуты:
+ * coordinate_x,
+ * coordinate_y,
+ * game_field_id
+ */
 class ShotEntity extends AbstractEntity
 {
     protected ?int $id;
-    protected int $coordinate_x;
-    protected int $coordinate_y;
-    protected int $gameFieldId;
+    protected array $data;
 
-
+    public function __construct($row)
+    {
+        $this->data = $row;
+    }
 
     /**
      * @return int|null
      */
     public function getId(): ?int
     {
-        return $this->id;
+        return $this->data['id'];
     }
 
     /**
@@ -24,7 +31,7 @@ class ShotEntity extends AbstractEntity
      */
     public function getCoordinateX(): int
     {
-        return $this->coordinate_x;
+        return $this->data['coordinate_x'];
     }
 
     /**
@@ -32,7 +39,7 @@ class ShotEntity extends AbstractEntity
      */
     public function getCoordinateY(): int
     {
-        return $this->coordinate_y;
+        return $this->data['coordinate_y'];
     }
 
     /**
@@ -40,6 +47,6 @@ class ShotEntity extends AbstractEntity
      */
     public function getGameFieldId(): int
     {
-        return $this->gameFieldId;
+        return $this->data['game_field_id'];
     }
 }
