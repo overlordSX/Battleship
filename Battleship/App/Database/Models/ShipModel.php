@@ -27,7 +27,6 @@ class ShipModel extends AbstractModel
         return $this
             ->query()
             ->where('name', '=', $name)
-            ->select()
             ->fetch();
     }
 }
