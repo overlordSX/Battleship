@@ -43,6 +43,8 @@ class GameEntity extends AbstractEntity
     }
 
     /**
+     * false - ход первого
+     * true - ход второго
      * @return bool
      */
     public function getTurn(): bool
