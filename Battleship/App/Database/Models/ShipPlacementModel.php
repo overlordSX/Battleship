@@ -185,6 +185,11 @@ class ShipPlacementModel extends AbstractModel
 
             $placedShips = $this->getPlacedShipsList($gameFieldId);
 
+            $shotModel = new ShotModel();
+            $firedShots = $shotModel->getShotsArray($gameFieldId);
+
+            var_dump($firedShots);
+
             foreach ($placedShips as $placedShip) {
                 $x = $placedShip->getCoordinateX();
                 $y = $placedShip->getCoordinateY();
@@ -199,18 +204,22 @@ class ShipPlacementModel extends AbstractModel
 
                 if ($isHorizontal) {
                     for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
+                        //TODO недогнал чет почему не робит попадание
+                        $visibility = $firedShots[$x + $i][$y] ?? 0;
+                        var_dump($visibility);
                         $field[$x + $i][$y] =
                             [
-                                [$name, 0]
+                                [$name, $visibility]
                                 //TODO потом, когда то, будет проверка на видимость, в зависимости от попадания
                             ];
                     }
 
                 } else {
                     for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
+                        $visibility = $firedShots[$x][$y + $i] ?? 0;
                         $field[$x][$y + $i] =
                             [
-                                [$name, 0]
+                                [$name, $visibility]
                                 //TODO потом, когда то, будет проверка на видимость, в зависимости от попадания
                             ];
                     }
