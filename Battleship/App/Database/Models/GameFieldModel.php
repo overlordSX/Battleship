@@ -16,6 +16,16 @@ class GameFieldModel extends AbstractModel
     protected string $tableName = 'game_field';
     protected string $entityClassName = GameFieldEntity::class;
 
+    /**
+     * @throws \Exception
+     */
+    public function create($gameId, $playerId): bool
+    {
+        return $this->insert([
+            'game_id' => $gameId,
+            'player_id' => $playerId
+        ]);
+    }
 
     /**
      * @param $gameId
@@ -29,7 +39,6 @@ class GameFieldModel extends AbstractModel
             ->query()
             ->where('game_id', '=', $gameId)
             ->where('player_id', '=', $playerId)
-            ->select()
             ->fetch();
     }
 }
