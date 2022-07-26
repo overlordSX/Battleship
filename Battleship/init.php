@@ -27,6 +27,7 @@ Autoloader::register('Battleship/App/Database/Models/GameModel');
 Autoloader::register('Battleship/App/Database/Models/ShipModel');
 Autoloader::register('Battleship/App/Database/Models/GameFieldModel');
 Autoloader::register('Battleship/App/Database/Models/ShipPlacementModel');
+Autoloader::register('Battleship/App/Database/Models/ShotModel');
 
 
 Autoloader::register('Battleship/App/Controllers/Util/JsonUtil');
