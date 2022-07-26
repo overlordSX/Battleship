@@ -17,9 +17,9 @@ Router::route('POST', ['/api/clear-field/(\d+)/(.+)'], [Con\PlacementController:
 
 Router::route('POST', ['/api/ready/(\d+)/(.+)'], [Con\GameController::class, 'setReady']);
 
-Router::route('POST', ['/api/shot/(\d+)/(.+)/'], [Con\ShotController::class, 'makeShot']);
+Router::route('POST', ['/api/shot/(\d+)/(.+)'], [Con\ShotController::class, 'makeShot']);
 
-Router::route('GET', ['/api/chat-load/(\d+)/(.+)/'], [Con\ChatController::class, 'loadChat']);
+Router::route('GET', ['/api/chat-load/(\d+)/(.+)'], [Con\ChatController::class, 'loadChat']);
 
-Router::route('POST', ['/api/chat-send/(\d+)/(.+)/'], [Con\ChatController::class, 'sendMessage']);
+Router::route('POST', ['/api/chat-send/(\d+)/(.+)'], [Con\ChatController::class, 'sendMessage']);
 
