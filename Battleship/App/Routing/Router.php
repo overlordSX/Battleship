@@ -25,6 +25,7 @@ class Router
 
     /**
      * к началу автоматически добавляется /^, к концу $/, все / экранируются \/
+     * @param string $requestedMethod
      * @param array $patternArray массив шаблонов url адреса
      * @param array $classNameAndMethod
      * @throws Exception
@@ -47,13 +48,12 @@ class Router
 
     /**
      * @return mixed|void
-     * @var callable $callback
      * @var string $url заправшиваемый url
      */
     public static function execute(string $url)
     {
 
-        $isFound = false;
+        static $isFound = false;
         foreach (self::$routes as $pattern => $routeParams) {
             if (preg_match($pattern, $url, $params) and $routeParams['requestedMethod'] === $_SERVER['REQUEST_METHOD']) {
                 array_shift($params);
@@ -63,10 +63,10 @@ class Router
                 return call_user_func_array($routeParams['callback'], array_values($params));
             }
         }
-        /*if (!$isFound) {
+        if (!$isFound) {
             header('Location: /error-404');
             die();
-        }*/
+        }
     }
 
 }
