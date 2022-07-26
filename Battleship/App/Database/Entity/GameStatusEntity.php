@@ -2,18 +2,28 @@
 
 namespace Battleship\App\Database\Entity;
 
+/**
+ * Аттрибуты status, description
+ */
 class GameStatusEntity extends AbstractEntity
 {
     protected ?int $id;
     protected int $status;
     protected string $description;
 
+    protected array $data;
+
+    public function __construct($row)
+    {
+        $this->data = $row;
+    }
+
     /**
      * @return int|null
      */
     public function getId(): ?int
     {
-        return $this->id;
+        return $this->data['id'];
     }
 
     /**
@@ -21,7 +31,7 @@ class GameStatusEntity extends AbstractEntity
      */
     public function getStatus(): int
     {
-        return $this->status;
+        return $this->data['status'];
     }
 
     /**
@@ -29,6 +39,6 @@ class GameStatusEntity extends AbstractEntity
      */
     public function getDescription(): string
     {
-        return $this->description;
+        return $this->data['description'];
     }
 }
