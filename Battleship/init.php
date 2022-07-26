@@ -4,8 +4,6 @@ require_once 'Battleship/App/Autoloader.php';
 
 use Battleship\App\Autoloader;
 
-Autoloader::register('Battleship/App/Autoloader');
-
 
 require_once 'Battleship/App/Database/config/config.php';
 Autoloader::register('Battleship/App/Database/Database');
