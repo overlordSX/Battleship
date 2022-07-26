@@ -16,6 +16,21 @@ class PlayerModel extends AbstractModel
 
 
     /**
+     * @return PlayerEntity
+     * @throws \Exception
+     */
+    public function createPlayer(): AbstractEntity
+    {
+        $code = $this->getNewPlayerCode();
+
+        $this->insert(['code' => $code]);
+
+        return $this->query()
+            ->where('code','=', $code)
+            ->fetch();
+    }
+
+    /**
      * @param $playerCode
      * @return PlayerEntity
      * @throws \Exception
@@ -26,7 +41,6 @@ class PlayerModel extends AbstractModel
         return $this
             ->query()
             ->where('code', '=', $playerCode)
-            ->select()
             ->fetch();
     }
 
@@ -41,8 +55,16 @@ class PlayerModel extends AbstractModel
         return $this
             ->query()
             ->where('id', '=', $playerId)
-            ->select()
             ->fetch();
     }
 
+    protected function getNewPlayerCode(): string
+    {
+        return uniqid();
+    }
+
+    protected function getNewPlayerCodeMd5(): string
+    {
+        return md5(microtime(true));
+    }
 }
