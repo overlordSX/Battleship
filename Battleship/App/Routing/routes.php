@@ -15,7 +15,7 @@ Router::route('POST', ['/api/place-ship/(\d+)/(.+)'], [Con\PlacementController::
 
 Router::route('POST', ['/api/clear-field/(\d+)/(.+)'], [Con\PlacementController::class, 'clearField']);
 
-Router::route('POST', ['/api/ready/(\d+)/(.+)/'], [Con\GameController::class, 'setStatus']);
+Router::route('POST', ['/api/ready/(\d+)/(.+)'], [Con\GameController::class, 'setReady']);
 
 Router::route('POST', ['/api/shot/(\d+)/(.+)/'], [Con\ShotController::class, 'makeShot']);
 
