@@ -4,7 +4,7 @@ namespace Battleship\App\Database\Entity;
 
 /**
  * есть следующие поля:
- * id, turn, game_status_id, first_player_id, second_player_id
+ * id, turn, game_status_id, first_player_id, second_player_id, first_ready, second_ready
  */
 class GameEntity extends AbstractEntity
 {
@@ -53,7 +53,7 @@ class GameEntity extends AbstractEntity
     /**
      * @return int
      */
-    public function getFirstPlayerId(): mixed
+    public function getFirstPlayerId(): int
     {
         return $this->data['first_player_id'];
     }
@@ -61,9 +61,24 @@ class GameEntity extends AbstractEntity
     /**
      * @return int
      */
-    public function getSecondPlayerId(): mixed
+    public function getSecondPlayerId(): int
     {
         return $this->data['second_player_id'];
     }
 
+    /**
+     * @return bool
+     */
+    public function isFirstReady(): bool
+    {
+        return $this->data['first_ready'];
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSecondReady(): bool
+    {
+        return $this->data['second_ready'];
+    }
 }
