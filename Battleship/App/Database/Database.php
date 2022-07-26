@@ -51,7 +51,6 @@ class Database
                 3,
                 $_SERVER['DOCUMENT_ROOT'] . '/logs/connection-error.log'
             );
-            header('Location: /error-500');
             die();
         }
 
@@ -123,7 +122,6 @@ class Database
             3,
             $_SERVER['DOCUMENT_ROOT'] . '/logs/db-error.log'
         );
-        header('Location: /error-500');
         die();
     }
 
