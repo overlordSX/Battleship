@@ -42,9 +42,15 @@ class GameController implements ControllerInterface
         JsonUtil::makeAnswer($info);
     }
 
-    public function setStatus()
+    /**
+     * @throws Exception
+     */
+    public function setReady($gameId, $playerCode): void
     {
-        echo "here i am setStatus<br>";
+        $gameModel = new GameModel();
+        $ready = $gameModel->playersReady($gameId, $playerCode);
+
+        JsonUtil::makeAnswer($ready);
     }
 
 
