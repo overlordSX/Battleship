@@ -25,6 +25,7 @@ abstract class AbstractModel
     }
 
     /**
+     * ['column' => value]
      * @param array $params
      * @return bool успешно или нет
      * @throws Exception
