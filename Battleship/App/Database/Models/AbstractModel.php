@@ -35,15 +35,13 @@ abstract class AbstractModel
     }
 
     /**
-     * @param string $attribute
-     * @param string $condition
-     * @param array $oldValue
-     * @param array $newValue
-     * @return QueryBuilder успешно или нет
+     * @param array $conditions [[attr => [cond => value]], ...]
+     * @param array $sets [[attr => newVal], ...]
+     * @return bool успешно или нет
      */
-    public function update(string $attribute, string $condition, mixed $oldValue, mixed $newValue): QueryBuilder
+    public function update(array $conditions, array $sets): bool
     {
-        return $this->getQueryBuilder()->update($this->tableName, $attribute, $condition, $oldValue, $newValue);
+        return $this->getQueryBuilder()->update($this->tableName, $conditions, $sets);
     }
 
     public function delete(string $attribute, string $condition, mixed $value): bool
