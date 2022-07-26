@@ -3,11 +3,20 @@
 namespace Battleship\App\Controllers;
 
 
+use Battleship\App\Controllers\Util\JsonUtil;
+use Battleship\App\Database\Model\ShotModel;
+
 class ShotController implements ControllerInterface
 {
-    public function makeShot()
+    /**
+     * @throws \Exception
+     */
+    public function makeShot($gameId, $playerCode)
     {
-        echo "hello, it's makeShot";
+        $shotModel = new ShotModel();
+        $success = $shotModel->makeShot($gameId, $playerCode);
+
+         JsonUtil::makeAnswer($success);
     }
 
 }
