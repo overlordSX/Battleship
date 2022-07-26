@@ -44,6 +44,7 @@ class QueryBuilder
 
 
     protected array $where = [];
+    protected array $set = [];
 
     public function clear(): static
     {
@@ -102,13 +103,47 @@ class QueryBuilder
 
     }
 
-    public function update(string $tableName, string $attribute, string $condition, mixed $oldValue, mixed $newValue): static
-    {
-        $this->query['update'] = 'update ' . $tableName . ' ';
-        $this->query['set'] = ' set ' . $this->prepareSet([$attribute => ':newValue']) . ' ';
-        $this->where($attribute, $condition, $oldValue);
 
-        $this->queryParams['newValue'] = $newValue;
+    /**
+     * @param string $tableName
+     * @param array $conditions [attr => [cond => val]]
+     * @param array $sets [attr => newVal]
+     * @return bool
+     */
+    public function update(string $tableName, array $conditions, array $sets): bool
+    {
+        $this->mainTableName = $tableName;
+        $this->query['update'] = 'update ' . $this->mainTableName . ' ';
+
+        foreach ($conditions as $condition) {
+            foreach ($condition as $attr => $condValue) {
+                foreach ($condValue as $cond => $value) {
+                    $this->where($attr, $cond, $value);
+                }
+
+            }
+        }
+
+        foreach ($sets as $set) {
+            foreach ($set as $attr => $newValue) {
+                $this->set(
+                    $attr,
+                    $newValue
+                );
+            }
+
+        }
+
+        return $this->prepareAndExecute();
+    }
+
+    protected function set(string $attribute, string|int $newValue): static
+    {
+
+        $namedPlaceholder = ':' . $attribute . 'Set';
+        $this->set[$attribute] = $namedPlaceholder;
+
+        $this->queryParams[$namedPlaceholder] = $newValue;
 
         return $this;
     }
@@ -229,10 +264,11 @@ class QueryBuilder
 
 
     public function where(
-        string $attribute,
-        string $condition,
-        mixed  $value
-    ): static {
+        string     $attribute,
+        string     $condition,
+        string|int $value
+    ): static
+    {
         $namedPlaceholder = ':' . $attribute . 'Where';
         $this->queryParams[$namedPlaceholder] = $value;
 
@@ -285,7 +321,7 @@ class QueryBuilder
         return $this;
     }
 
-    public function selectCountRows(): static
+    protected function selectCountRows(): static
     {
         $this->query['select'] = 'select count(*) as count ';
 
@@ -340,6 +376,16 @@ class QueryBuilder
     public function getQuery(): string
     {
 
+        $setArr = [];
+
+        foreach ($this->set as $attr => $newValue) {
+            $setArr[] = $attr . ' = ' . $newValue;
+        }
+
+        if ($setArr) {
+            $this->query['set'] = ' set ' . implode(' , ', $setArr) . ' ';
+        }
+
         $whereArr = [];
 
         foreach ($this->where as $attr => $condAndVal) {
@@ -352,6 +398,9 @@ class QueryBuilder
             $this->query['where'] = ' where ' . implode(' and ', $whereArr) . ' ';
         }
 
+        if ($this->query['from'] && !$this->query['select']) {
+            $this->query['select'] = ' select * ';
+        }
 
         return implode('', $this->query);
     }
@@ -393,6 +442,8 @@ class QueryBuilder
 
     public function fetchCount(): int
     {
+        $this->selectCountRows();
+
         return Database::queryFetchRow($this->getQuery(), $this->queryParams)['count'];
     }
 
