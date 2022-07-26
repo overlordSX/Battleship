@@ -15,11 +15,20 @@ class Autoloader
             function () use ($path) {
 
                 $filePath = $path . '.php';
-                //echo $filePath;
-                if (file_exists($filePath)) {
+                try {
                     require_once $filePath;
-                } else {
-                    throw new Exception('Файл, подключаемый через Autoloader не найден.');
+                } catch (Exception $exception) {
+                    if (!file_exists($_SERVER['DOCUMENT_ROOT'] . '/logs/autoloader.log')) {
+                        mkdir($_SERVER['DOCUMENT_ROOT'] . '/logs');
+                        $mkFile = fopen($_SERVER['DOCUMENT_ROOT'] . '/logs/autoloader.log', "a+");
+                        fclose($mkFile);
+                    }
+                    error_log(
+                        $exception->getMessage() . PHP_EOL,
+                        3,
+                        $_SERVER['DOCUMENT_ROOT'] . '/logs/autoloader.log'
+                    );
+                    die();
                 }
             }
         );
