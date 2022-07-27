@@ -20,6 +20,68 @@ class ShipPlacementModel extends AbstractModel
     protected string $tableName = 'ship_placement';
     protected string $entityClassName = ShipPlacementEntity::class;
 
+    protected array $usedPlaces = [];
+    protected array $placedShips = [];
+    protected array $field = [];
+    protected int $gameFieldId;
+
+    protected array $firedShots = [];
+
+    protected function setGameField($gameFieldId): void
+    {
+        $this->gameFieldId = $gameFieldId;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getShips(): array
+    {
+        if (!$this->placedShips) {
+            $this->placedShips = $this->getPlacedShipsList($this->gameFieldId);
+        }
+
+        return $this->placedShips;
+    }
+
+    public function getUsedPlaces(): array
+    {
+        return $this->usedPlaces;
+    }
+
+    public function getField(): array
+    {
+        if (!$this->field) {
+            $this->field = $this->getEmptyPlacementArray();
+        }
+
+        return $this->field;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getFiredShots(): array
+    {
+        if (!$this->firedShots) {
+            $shotModel = new ShotModel();
+            $this->firedShots = $shotModel->getShotsArray($this->gameFieldId);
+        }
+
+        return $this->firedShots;
+    }
+
+
+    public function setUsedPlaces(array $usedPlaces): void
+    {
+        $this->usedPlaces = $usedPlaces;
+    }
+
+
+    public function setField(array $field): void
+    {
+        $this->field = $field;
+    }
 
     /**
      * @throws \Exception
@@ -172,63 +234,64 @@ class ShipPlacementModel extends AbstractModel
 
     /**
      * @param $gameFieldId
-     * @return array
+     * @param bool $forEnemy
+     * @return ShipPlacementModel
      * @throws \Exception
      */
-    #[ArrayShape(['usedPlaces' => "array", 'field' => "array"])]
-    public function getFieldAndUsedPlaces($gameFieldId, bool $forEnemy = false): array
+    public function getFieldAndUsedPlaces($gameFieldId, bool $forEnemy = false): static
     {
-        $usedPlaces = [];
-        $field = $this->getEmptyPlacementArray();
+        $this->setGameField($gameFieldId);
 
-        if ($this->getShipsCount($gameFieldId)) {
+        $placedShips = $this->getShips();
+        foreach ($placedShips as $placedShip) {
+            $this->fillField($placedShip, $forEnemy);
+        }
 
-            $placedShips = $this->getPlacedShipsList($gameFieldId);
+        return $this;
+    }
 
-            $shotModel = new ShotModel();
-            $firedShots = $shotModel->getShotsArray($gameFieldId);
+    /**
+     * @throws \Exception
+     */
+    public function fillField($placedShip, bool $forEnemy = false)
+    {
+        $field = $this->getField();
+        $firedShots = $this->getFiredShots();
+        $usedPlaces = $this->getUsedPlaces();
 
-            var_dump($firedShots);
+        $x = $placedShip->getCoordinateX();
+        $y = $placedShip->getCoordinateY();
+        $isHorizontal = $placedShip->getOrientation();
+        $placedShipName = $placedShip->getCustom('name');
+        $usedPlaces[] = $placedShipName;
 
-            foreach ($placedShips as $placedShip) {
-                $x = $placedShip->getCoordinateX();
-                $y = $placedShip->getCoordinateY();
-                $isHorizontal = $placedShip->getOrientation();
-                $name = $placedShip->getCustom('name');
+        if ($isHorizontal) {
+            for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
+                $visibility = $firedShots[$x + $i][$y];
 
-                //TODO чтоб не париться с выстрелами
-                //if (!$forEnemy) {
-                $usedPlaces[] = $name;
-                //$usedPlaces[] = $forEnemy ?: $name;
-
-
-                if ($isHorizontal) {
-                    for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
-                        //TODO недогнал чет почему не робит попадание
-                        $visibility = $firedShots[$x + $i][$y] ?? 0;
-                        var_dump($visibility);
-                        $field[$x + $i][$y] =
-                            [
-                                [$name, $visibility]
-                                //TODO потом, когда то, будет проверка на видимость, в зависимости от попадания
-                            ];
-                    }
-
-                } else {
-                    for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
-                        $visibility = $firedShots[$x][$y + $i] ?? 0;
-                        $field[$x][$y + $i] =
-                            [
-                                [$name, $visibility]
-                                //TODO потом, когда то, будет проверка на видимость, в зависимости от попадания
-                            ];
-                    }
-                }
-
-                //}
+                $field[$x + $i][$y] = [
+                    $forEnemy && $visibility || !$forEnemy ? $placedShipName : 'empty',
+                    $visibility
+                ];
+            }
+        } else {
+            for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
+                $visibility = $firedShots[$x][$y + $i];
+                $field[$x][$y + $i] = [
+                    $forEnemy && $visibility || !$forEnemy ? $placedShipName : 'empty',
+                    $visibility
+                ];
             }
         }
-        return ['usedPlaces' => $usedPlaces, 'field' => $field];
+
+        foreach ($firedShots as $x => $yVal) {
+            foreach ($yVal as $y => $value) {
+                $field[$x][$y][1] = $value;
+            }
+        }
+
+        $this->setField($field);
+        $this->setUsedPlaces($usedPlaces);
     }
 
 
@@ -269,5 +332,16 @@ class ShipPlacementModel extends AbstractModel
             ->where('game_field_id', '=', $gameFieldId)
             ->where('ship_id', '=', $shipId)
             ->fetch();
+    }
+
+
+    /**
+     * @throws \Exception
+     */
+    public function isHereShip(int $x, int $y): bool
+    {
+        $field = $this->getField();
+
+        return $field[$x][$y][0] !== 'empty';
     }
 }
