@@ -3,6 +3,7 @@
 namespace Battleship\App\Database\Model;
 
 use Battleship\App\Database\Entity\AbstractEntity;
+use Battleship\App\Database\Entity\GameEntity;
 use Battleship\App\Database\Entity\PlayerEntity;
 
 /**
@@ -26,7 +27,7 @@ class PlayerModel extends AbstractModel
         $this->insert(['code' => $code]);
 
         return $this->query()
-            ->where('code','=', $code)
+            ->where('code', '=', $code)
             ->fetch();
     }
 
@@ -42,6 +43,47 @@ class PlayerModel extends AbstractModel
             ->query()
             ->where('code', '=', $playerCode)
             ->fetch();
+    }
+
+
+    /**
+     * @param GameEntity $currentGame
+     * @param PlayerEntity $currentPlayer
+     * @return PlayerEntity enemyPlayer
+     * @throws \Exception
+     */
+    public function getEnemyPlayer(GameEntity $currentGame, PlayerEntity $currentPlayer): AbstractEntity
+    {
+        $isFirstPlayerIsCurrent = $currentGame->getFirstPlayerId() === $currentPlayer->getId();
+        $enemyId = $isFirstPlayerIsCurrent
+            ? $currentGame->getSecondPlayerId() : $currentGame->getFirstPlayerId();
+        return $this->getPlayerById($enemyId);
+    }
+
+
+    /**
+     * @param GameEntity $currentGame
+     * @param PlayerEntity $currentPlayer
+     * @return bool
+     */
+    public function isCurrentReady(GameEntity $currentGame, PlayerEntity $currentPlayer): bool
+    {
+        $isFirstPlayerIsCurrent = $currentGame->getFirstPlayerId() === $currentPlayer->getId();
+        return $isFirstPlayerIsCurrent
+            ? $currentGame->isFirstReady(): $currentGame->isSecondReady();
+    }
+
+
+    /**
+     * @param GameEntity $currentGame
+     * @param PlayerEntity $currentPlayer
+     * @return bool
+     */
+    public function isMyTurn(GameEntity $currentGame, PlayerEntity $currentPlayer): bool
+    {
+        $isFirstPlayerIsCurrent = $currentGame->getFirstPlayerId() === $currentPlayer->getId();
+        return $isFirstPlayerIsCurrent
+            ? $currentGame->getTurn() === false: $currentGame->getTurn() === true;
     }
 
     /**
