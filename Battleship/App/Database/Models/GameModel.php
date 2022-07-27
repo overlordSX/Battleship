@@ -67,28 +67,24 @@ class GameModel extends AbstractModel
 
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
+        $enemyPlayer = $playerModel->getEnemyPlayer($currentGame, $currentPlayer);
 
-        $isFirstPlayerIsCurrent = $currentGame->getFirstPlayerId() === $currentPlayer->getId();
-        if ($isFirstPlayerIsCurrent) {
-            $enemyId = $currentGame->getSecondPlayerId();
-            $currentIsReady = $currentGame->isFirstReady();
-            $isMyTurn = $currentGame->getTurn() === false;
-        } else {
-            $enemyId = $currentGame->getFirstPlayerId();
-            $currentIsReady = $currentGame->isSecondReady();
-            $isMyTurn = $currentGame->getTurn() === true;
-        }
-
-        $enemyPlayer = $playerModel->getPlayerById($enemyId);
+        $isMyTurn = $playerModel->isMyTurn($currentGame, $currentPlayer);
+        $isCurrentReady = $playerModel->isCurrentReady($currentGame, $currentPlayer);
 
         $gameFieldModel = new GameFieldModel();
         $myGameField = $gameFieldModel->getByGameAndPlayer($gameId, $currentPlayer->getId());
         $enemyGameField = $gameFieldModel->getByGameAndPlayer($gameId, $enemyPlayer->getId());
 
-        $shipPlacementModel = new ShipPlacementModel();
-        $myFieldAndUsedPlaces = $shipPlacementModel->getFieldAndUsedPlaces($myGameField->getId());
-        $enemyFieldAndUsedPlaces = $shipPlacementModel->getFieldAndUsedPlaces($enemyGameField->getId(), true);
+        //TODO здесь типо получать только расположение кораблей
+        $myFieldAndUsedPlaces = new ShipPlacementModel();
+        $myFieldAndUsedPlaces->getFieldAndUsedPlaces($myGameField->getId());
 
+        $enemyFieldAndUsedPlaces = new ShipPlacementModel();
+        $enemyFieldAndUsedPlaces->getFieldAndUsedPlaces($enemyGameField->getId(), true);
+
+        //TODO как нибудь соеденить массивы расположения кораблей и расположения выстрелов,
+        // чтобы получалось полное поле с кораблями и выстрелами
 
 
         /*var_dump($currentGame);*/
@@ -98,15 +94,26 @@ class GameModel extends AbstractModel
                 'status' => $currentGame->getGameStatusId(),
                 'invite' => $enemyPlayer->getCode(),
                 'myTurn' => $isMyTurn,
-                'meReady' => $currentIsReady
+                'meReady' => $isCurrentReady
             ],
-            'fieldMy' => $myFieldAndUsedPlaces['field'],
-            'fieldEnemy' => $enemyFieldAndUsedPlaces['field'],
-            'usedPlaces' => $myFieldAndUsedPlaces['usedPlaces'],
+            'fieldMy' => $myFieldAndUsedPlaces->getField(),
+            'fieldEnemy' => $enemyFieldAndUsedPlaces->getField(),
+            'usedPlaces' => $myFieldAndUsedPlaces->getUsedPlaces(),
             'success' => true
         ];
     }
 
+    /**
+     * @throws Exception
+     */
+    public function changeTurn($gameId): bool
+    {
+        $currentGame = $this->query()->where('id', '=', $gameId)->fetch();
+        return $this->update(
+            [['id' => ['=' => $gameId]]],
+            [['turn' => !$currentGame->getTurn()]]
+        );
+    }
 
     /**
      * @throws Exception
