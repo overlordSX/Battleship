@@ -353,8 +353,7 @@ class QueryBuilder
             $this->query['orderBy'] .= ' , ';
         }
 
-        $this->query['orderBy'] .= $attribute . ' ' . $order;
-
+        $this->query['orderBy'] .= $attribute . ' ' . $order . ' ';
         return $this;
     }
 
