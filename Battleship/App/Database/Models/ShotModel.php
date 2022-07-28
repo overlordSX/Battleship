@@ -91,7 +91,7 @@ class ShotModel extends AbstractModel
 
         if ($shipSize === 1) {
 
-            $startFillX = $coordinateX;
+            /*$startFillX = $coordinateX;
             $startFillY = $coordinateY;
 
 
@@ -109,10 +109,12 @@ class ShotModel extends AbstractModel
                 for ($y = $startFillY; $y <= $endY; $y++) {
                     $success['success'] = $this->realize($x, $y, $enemyGameField->getId());
                 }
-            }
+            }*/
 
             //$success['success'] = $this->fillShots($coordinateX, $coordinateY,$shipSize, $enemyGameField->getId());
 
+
+            $success['success'] = $this->fillShots($coordinateX, $coordinateY, $shipSize, $enemyGameField->getId());
             $success['kill'] = true;
             return $success;
         }
@@ -141,27 +143,33 @@ class ShotModel extends AbstractModel
 
         //TODO в данный момент success 'success' => true, 'hit' = true
 
-        $isHorizontal = false;
+        $isHorizontal = true;
         $count = 0;
         for ($i = 0; $i < $shipSize; $i++) {
-            //$visibility = $firedShots[$x + $i][$y];
-            $cell = $enemyField[$firstX + $i][$firstY];
-            if ($cell[0] === $shipName && $cell[1] !== 1) {
-                //$success['success'] = $this->realize($coordinateX, $coordinateY, $enemyGameField->getId());
-                return $success;
+
+            if ($firstX + $i >= 0 && $firstX + $i <= 9 && $firstY >= 0 && $firstY <= 9) {
+                $cell = $enemyField[$firstX + $i][$firstY];
+
+                if ($cell[0] === $shipName && $cell[1] !== 1) {
+                    //$success['success'] = $this->realize($coordinateX, $coordinateY, $enemyGameField->getId());
+                    return $success;
+                }
+
+                $count++;
             }
-            $count++;
         }
         $count = 0;
         for ($i = 0; $i < $shipSize; $i++) {
-            //$visibility = $firedShots[$x + $i][$y];
-            $cell = $enemyField[$firstX][$firstY + $i];
-            if ($cell[0] === $shipName && $cell[1] !== 1) {
-                //$success['success'] = $this->realize($coordinateX, $coordinateY, $enemyGameField->getId());
-                return $success;
+
+            if ($firstX >= 0 && $firstX <= 9 && $firstY + $i >= 0 && $firstY + $i <= 9) {
+                $cell = $enemyField[$firstX][$firstY + $i];
+                if ($cell[0] === $shipName && $cell[1] !== 1) {
+                    //$success['success'] = $this->realize($coordinateX, $coordinateY, $enemyGameField->getId());
+                    return $success;
+                }
+                $count++;
+                $isHorizontal = false;
             }
-            $count++;
-            $isHorizontal = true;
         }
 
         if ($count === $shipSize) {
@@ -191,39 +199,57 @@ class ShotModel extends AbstractModel
      */
     public function fillShots($coordinateX, $coordinateY, $shipSize, $gameFieldId, $isHorizontal = true): bool
     {
-        $startFillX = $coordinateX;
-        $startFillY = $coordinateY;
+        /* $startFillX = $coordinateX;
+         $startFillY = $coordinateY;
 
-        if ($coordinateX > 0 && $coordinateX < 9) {
-            $startFillX = $coordinateX - 1;
-        }
-        if ($coordinateY > 0 && $coordinateY < 9) {
-            $startFillY = $coordinateY - 1;
-        }
+         if ($coordinateX > 0) {
+             $startFillX = $coordinateX - 1;
+         }
+         if ($coordinateY > 0) {
+             $startFillY = $coordinateY - 1;
+         }
 
-        if ($isHorizontal) {
-            $endX = $startFillX + $shipSize + 1;
-            $endY = $startFillY + 1;
-        } else {
-            $endX = $startFillX + 1;
-            $endY = $startFillY + $shipSize + 1;
-        }
+         if ($isHorizontal) {
+             $endX = $startFillX + $shipSize + 1;
+             $endY = $startFillY + 1;
+         } else {
+             $endX = $startFillX + 1;
+             $endY = $startFillY + $shipSize + 1;
+         }
 
-        if ($endX > 9) {
-            $endX = 9;
-        }
-        if ($endY > 9) {
-            $endY = 9;
-        }
+         if ($endX > 9) {
+             $endX = 9;
+         }
+         if ($endY > 9) {
+             $endY = 9;
+         }
 
+         $shot = [];
 
-        for ($x = $startFillX; $x < $endX; $x++) {
-            for ($y = $startFillY; $y < $endY; $y++) {
-                if (!$this->realize($x, $y, $gameFieldId)) {
-                    return false;
+         for ($x = $startFillX; $x <= $endX; $x++) {
+             for ($y = $startFillY; $y <= $endY; $y++) {
+                 if (!$this->realize($x, $y, $gameFieldId)) {
+                     return false;
+                 }
+                 $shot[$x][$y] = 1;
+             }
+         }*/
+
+        //TODO + ориентация
+        $width = !$isHorizontal ? $shipSize : 1;
+        $height = !$isHorizontal ? 1 : $shipSize;
+
+        for ($x = $coordinateX - 1; $x <= $coordinateX + $width; $x++) {
+            for ($y = $coordinateY - 1; $y <= $coordinateY + $height; $y++) {
+                if ($x >= 0 && $x <= 9 && $y >= 0 && $y <= 9) {
+                    if (!$this->realize($x, $y, $gameFieldId)) {
+                        return false;
+                    }
                 }
             }
         }
+
+        //JsonUtil::makeAnswer($shot);
 
         return true;
     }
