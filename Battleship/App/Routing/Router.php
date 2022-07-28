@@ -58,13 +58,11 @@ class Router
             if (preg_match($pattern, $url, $params) and $routeParams['requestedMethod'] === $_SERVER['REQUEST_METHOD']) {
                 array_shift($params);
 
-                //TODO он мне говорит что локальная переменная, а как достучаться до той что выше?
                 $isFound = true;
                 return call_user_func_array($routeParams['callback'], array_values($params));
             }
         }
         if (!$isFound) {
-            header('Location: /error-404');
             die();
         }
     }
