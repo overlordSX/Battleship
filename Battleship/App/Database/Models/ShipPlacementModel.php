@@ -3,6 +3,8 @@
 namespace Battleship\App\Database\Model;
 
 use Battleship\App\Database\Entity\AbstractEntity;
+use Battleship\App\Database\Entity\GameEntity;
+use Battleship\App\Database\Entity\PlayerEntity;
 use Battleship\App\Database\Entity\ShipPlacementEntity;
 use JetBrains\PhpStorm\ArrayShape;
 
@@ -20,6 +22,9 @@ class ShipPlacementModel extends AbstractModel
     protected string $tableName = 'ship_placement';
     protected string $entityClassName = ShipPlacementEntity::class;
 
+
+    protected GameEntity $game;
+    protected PlayerEntity $player;
     protected array $usedPlaces = [];
     protected array $placedShips = [];
     protected array $field = [];
@@ -27,7 +32,36 @@ class ShipPlacementModel extends AbstractModel
 
     protected array $firedShots = [];
 
-    protected function setGameField($gameFieldId): void
+    protected function setGame($gameId): void
+    {
+        $gameModel = new GameModel();
+        $this->game = $gameModel->getGameById($gameId);
+    }
+
+    protected function setPlayer($playerCode): void
+    {
+        $playerModel = new PlayerModel();
+        $this->player = $playerModel->getPlayerByCode($playerCode);
+    }
+
+    /**
+     * @return GameEntity
+     */
+    public function getGame(): GameEntity
+    {
+        return $this->game;
+    }
+
+    /**
+     * @return PlayerEntity
+     */
+    public function getPlayer(): PlayerEntity
+    {
+        return $this->player;
+    }
+
+
+    protected function setGameFieldId($gameFieldId): void
     {
         $this->gameFieldId = $gameFieldId;
     }
@@ -86,116 +120,61 @@ class ShipPlacementModel extends AbstractModel
     /**
      * @throws \Exception
      */
-    public function placeShip($gameId, $playerCode): array
+    public function makePlacement($gameId, $playerCode): array
     {
         //TODO должна быть проверка что сейчас 2й статус игры + игрок не нажимал что готов
-
-        $success = [];
-
         //TODO хотя если отправить только название корабля, то он должен исчезнуть с поля
-        if (isset($_POST['x']) || isset($_POST['y']) || isset($_POST['ship']) || ($_POST['orientation'])) {
-            $success['success'] = false;
-            $success['message'] = 'не переданы все параметры';
-        }
-
-        $coordinateX ??= (int)$_POST['x']; //int, 0 <= x <= 9,
-        $coordinateY ??= (int)$_POST['y']; //int, 0 <= y <= 9,
-
-        $shipName ??= $_POST['ship']; // тип-номер корабля можно будет проверить regex ^[1-4]-[1-4]$
-
-        //TODO из за того что непонятно откуда берется запятая с фронта
-        $shipName = substr($shipName, 0, 3);
-
-
         //TODO сделать класс Resource, там toArray приведение к массиву разными классами, вроде это про JSON
         // это про ship-placement
         // в двух вариантах
 
+        $this->setGame($gameId);
+        $this->setPlayer($playerCode);
 
-        $orientation ??= $_POST['orientation']; // ^(vertical|horizontal)$
+        $success = [];
 
-        $isValid = $_POST['orientation'] === 'horizontal' || $_POST['orientation'] === 'vertical';
 
-        if (isset($_POST['orientation']) && $isValid) {
-            $orientation = ($_POST['orientation'] === 'horizontal');
-        }
-        $oldOrientation = !$orientation;
+        $isArray = isset($_POST['ships']);
+        $isUnsetShip = isset($_POST['ship'])
+            && !isset($_POST['x'])
+            && !isset($_POST['y'])
+            && !isset($_POST['orientation'])
+            && !isset($_POST['ships']);
 
-        $gameModel = new GameModel();
-        $currentGame = $gameModel->getGameById($gameId);
+        //TODO вот уже и валидация просится, когда переданы все пар
+        $isOneShip = isset($_POST['ship'])
+            && isset($_POST['x'])
+            && isset($_POST['y'])
+            && isset($_POST['orientation'])
+            && !isset($_POST['ships']);
 
-        $playerModel = new PlayerModel();
-        $currentPlayer = $playerModel->getPlayerByCode($playerCode);
 
-        $gameFieldModel = new GameFieldModel();
-        $currentGameField = $gameFieldModel->getByGameAndPlayer($gameId, $currentPlayer->getId());
-
-        $shipModel = new ShipModel();
-        $currentShip = $shipModel->getByName($shipName);
-
-        //TODO РАЗВОРОТ КОРАБЛЯ
-        // сначала надо проверить стоит ли уже такой корабль:
-        // если стоит
-        // -> сравнить ориентации
-        //      если разные -> поменять ориентацию, но при смене ориентации нужно еще проверять не пересекаются ли корабли
-        //      потом после проверки на пересечение с другими кораблями обновить данные в таблице
-        //      если одинаковые -> ничего не делать
-        // -> сравнить координаты
-        //      разные -> поставить новые
-        //      одинаковые -> ничего
-        // если не стоит -> поставить.
-
-        $isAlreadyPlaced = $this->query()
-            ->where('game_field_id', '=', $currentGameField->getId())
-            ->where('ship_id', '=', $currentShip->getId())
-            ->fetchCount();
-
-        if ($isAlreadyPlaced) {
-            //TODO получается тут будет проверка на пересечение
-            $placedShip = $this->getPlacedShip($currentGameField->getId(), $currentShip->getId());
-
-            if ($placedShip->getOrientation() === $oldOrientation) {
-                $success['success'] = $this
-                    ->update(
-                        [
-                            ['game_field_id' => ['=' => $currentGameField->getId()]],
-                            ['ship_id' => ['=' => $currentShip->getId()]]
-                        ],
-                        [['orientation' => $orientation]]
-                    );
-            } else {
-                //TODO тут можно сообщить о том что фронт послал ту же ориентацию снова
-                //$success['success'] = false;
-            }
-
-            $isCoordinateChanged = $placedShip->getCoordinateX() !== $coordinateX
-                || $placedShip->getCoordinateY() !== $coordinateY;
-
-            if ($isCoordinateChanged) {
-                $success['success'] = $this
-                    ->update(
-                        [
-                            ['game_field_id' => ['=' => $currentGameField->getId()]],
-                            ['ship_id' => ['=' => $currentShip->getId()]]
-                        ],
-                        [
-                            ['coordinate_x' => $coordinateX],
-                            ['coordinate_y' => $coordinateY]
-                        ]
-                    );
-            }
-        } else {
-            $success['success'] = $this
-                ->insert([
-                    'coordinate_x' => $coordinateX,
-                    'coordinate_y' => $coordinateY,
-                    'orientation' => $orientation,
-                    'ship_id' => $currentShip->getId(),
-                    'game_field_id' => $currentGameField->getId()
-                ]);
+        if ($isArray) {
+            $shipsQue = $_POST['ships'];
+        } elseif ($isUnsetShip) {
+            return ['success' => $this->unsetShip($_POST['ship'])];
+        } elseif ($isOneShip) {
+            $shipsQue = [[
+                'x' => $_POST['x'],
+                'y' => $_POST['y'],
+                'ship' => $_POST['ship'],
+                'orientation' => $_POST['orientation']
+            ]];
         }
 
-        return $success;
+        //TODO к error добавить коды ошибок
+        if (!isset($shipsQue)) {
+            return ['success' => false, 'message' => 'вы не передали необходимых параметров'];
+        }
+
+        foreach ($shipsQue as $ship) {
+            if (!$this->placeShip($ship)) {
+                return ['success' => false, 'message' => 'произошла ошибка при расстановке'];
+            }
+        }
+
+
+        return ['success' => true];
     }
 
 
@@ -240,7 +219,7 @@ class ShipPlacementModel extends AbstractModel
      */
     public function getFieldAndUsedPlaces($gameFieldId, bool $forEnemy = false): static
     {
-        $this->setGameField($gameFieldId);
+        $this->setGameFieldId($gameFieldId);
 
         $placedShips = $this->getShips();
         foreach ($placedShips as $placedShip) {
@@ -267,7 +246,7 @@ class ShipPlacementModel extends AbstractModel
 
         if ($isHorizontal) {
             for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
-                $visibility = $firedShots[$x + $i][$y];
+                $visibility = $firedShots[$x + $i][$y] ?? 0;
 
                 $field[$x + $i][$y] = [
                     $forEnemy && $visibility || !$forEnemy ? $placedShipName : 'empty',
@@ -286,7 +265,10 @@ class ShipPlacementModel extends AbstractModel
 
         foreach ($firedShots as $x => $yVal) {
             foreach ($yVal as $y => $value) {
-                $field[$x][$y][1] = $value;
+                //TODO без этого у меня появлалась какая то дичь поле
+                if ($x >= 0 && $y >= 0 && $x <= 9 && $y <= 9) {
+                    $field[$x][$y][1] = $value;
+                }
             }
         }
 
@@ -343,5 +325,113 @@ class ShipPlacementModel extends AbstractModel
         $field = $this->getField();
 
         return $field[$x][$y][0] !== 'empty';
+    }
+
+    /**
+     * @param string $shipName
+     * @return bool
+     * @throws \Exception
+     */
+    public function unsetShip(string $shipName): bool
+    {
+        $shipName = substr($shipName, 0, 3);
+        $shipModel = new ShipModel();
+        $ship = $shipModel->getByName($shipName);
+        return $this->delete('ship_id', '=', $ship->getId());
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function placeShip(array $ship): bool
+    {
+
+        // тип-номер корабля можно будет проверить regex ^[1-4]-[1-4]$
+//        $coordinateX ??= (int)$_POST['x']; //int, 0 <= x <= 9,
+//        $coordinateY ??= (int)$_POST['y']; //int, 0 <= y <= 9,
+
+        $coordinateX = $ship['x'];
+        $coordinateY = $ship['y'];
+
+        $shipName = $ship['ship'];
+        //TODO из за того что непонятно откуда берется запятая с фронта
+        $shipName = substr($shipName, 0, 3);
+
+        $orientation = ($ship['orientation'] === 'horizontal');
+        $oldOrientation = !$orientation;
+
+        $gameFieldModel = new GameFieldModel();
+        $currentGameField = $gameFieldModel->getByGameAndPlayer($this->game->getId(), $this->player->getId());
+
+        $shipModel = new ShipModel();
+        $currentShip = $shipModel->getByName($shipName);
+
+        //TODO РАЗВОРОТ КОРАБЛЯ
+        // сначала надо проверить стоит ли уже такой корабль:
+        // если стоит
+        // -> сравнить ориентации
+        //      если разные -> поменять ориентацию, но при смене ориентации нужно еще проверять не пересекаются ли корабли
+        //      потом после проверки на пересечение с другими кораблями обновить данные в таблице
+        //      если одинаковые -> ничего не делать
+        // -> сравнить координаты
+        //      разные -> поставить новые
+        //      одинаковые -> ничего
+        // если не стоит -> поставить.
+
+        if ($this->isAlreadyPlaced($currentGameField->getId(), $currentShip->getId())) {
+            //TODO получается тут будет проверка на пересечение
+            $placedShip = $this->getPlacedShip($currentGameField->getId(), $currentShip->getId());
+
+            if ($placedShip->getOrientation() === $oldOrientation) {
+                return $this
+                    ->update(
+                        [
+                            ['game_field_id' => ['=' => $currentGameField->getId()]],
+                            ['ship_id' => ['=' => $currentShip->getId()]]
+                        ],
+                        [['orientation' => $orientation]]
+                    );
+            }
+
+            $isCoordinateChanged = $placedShip->getCoordinateX() !== $coordinateX
+                || $placedShip->getCoordinateY() !== $coordinateY;
+
+            if ($isCoordinateChanged) {
+                return $this
+                    ->update(
+                        [
+                            ['game_field_id' => ['=' => $currentGameField->getId()]],
+                            ['ship_id' => ['=' => $currentShip->getId()]]
+                        ],
+                        [
+                            ['coordinate_x' => $coordinateX],
+                            ['coordinate_y' => $coordinateY]
+                        ]
+                    );
+            }
+
+            return false;
+        } else {
+            return $this
+                ->insert([
+                    'coordinate_x' => $coordinateX,
+                    'coordinate_y' => $coordinateY,
+                    'orientation' => $orientation,
+                    'ship_id' => $currentShip->getId(),
+                    'game_field_id' => $currentGameField->getId()
+                ]);
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function isAlreadyPlaced($gameFieldId, $shipId): bool
+    {
+        return $this->query()
+            ->where('game_field_id', '=', $gameFieldId)
+            ->where('ship_id', '=', $shipId)
+            ->fetchCount();
+
     }
 }
