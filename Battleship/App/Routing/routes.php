@@ -19,7 +19,7 @@ Router::route('POST', ['/api/ready/(\d+)/(.+)'], [Con\GameController::class, 'se
 
 Router::route('POST', ['/api/shot/(\d+)/(.+)'], [Con\ShotController::class, 'makeShot']);
 
-Router::route('GET', ['/api/chat-load/(\d+)/(.+)'], [Con\ChatController::class, 'loadChat']);
+Router::route('GET', ['/api/chat-load/(\d+)/(.{13})$', '/api/chat-load/(\d+)/(.{13})?(.+)' ], [Con\ChatController::class, 'loadChat']);
 
 Router::route('POST', ['/api/chat-send/(\d+)/(.+)'], [Con\ChatController::class, 'sendMessage']);
 
