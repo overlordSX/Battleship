@@ -1,8 +1,9 @@
 <?php
 
-use Battleship\App\Routing\Router;
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: *");
 
-header('Access-Control-Allow-Origin: *');
+use Battleship\App\Routing\Router;
 
 require_once "Battleship/init.php";
 
