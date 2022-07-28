@@ -14,7 +14,7 @@ class PlacementController implements ControllerInterface
     public function placeShip(int $gameId, string $playerCode)
     {
         $shipPlacementModel = new ShipPlacementModel();
-        $success = $shipPlacementModel->placeShip($gameId, $playerCode);
+        $success = $shipPlacementModel->makePlacement($gameId, $playerCode);
 
         JsonUtil::makeAnswer($success);
     }
