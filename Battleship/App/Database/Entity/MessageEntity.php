@@ -2,20 +2,29 @@
 
 namespace Battleship\App\Database\Entity;
 
+/**
+ * Аттрибуты:
+ * created_at,
+ * content,
+ * game_id,
+ * player_id
+ */
 class MessageEntity extends AbstractEntity
 {
     protected ?int $id;
-    protected int $createdAt;
-    protected string $content;
-    protected int $gameId;
-    protected int $playerId;
+    protected array $data;
+
+    public function __construct($row)
+    {
+        $this->data = $row;
+    }
 
     /**
      * @return int|null
      */
     public function getId(): ?int
     {
-        return $this->id;
+        return $this->data['id'];
     }
 
     /**
@@ -23,7 +32,7 @@ class MessageEntity extends AbstractEntity
      */
     public function getCreatedAt(): int
     {
-        return $this->createdAt;
+        return $this->data['created_at'];
     }
 
     /**
@@ -31,7 +40,7 @@ class MessageEntity extends AbstractEntity
      */
     public function getContent(): string
     {
-        return $this->content;
+        return $this->data['content'];
     }
 
     /**
@@ -39,7 +48,7 @@ class MessageEntity extends AbstractEntity
      */
     public function getGameId(): int
     {
-        return $this->gameId;
+        return $this->data['game_id'];
     }
 
     /**
@@ -47,6 +56,6 @@ class MessageEntity extends AbstractEntity
      */
     public function getPlayerId(): int
     {
-        return $this->playerId;
+        return $this->data['player_id'];
     }
 }
