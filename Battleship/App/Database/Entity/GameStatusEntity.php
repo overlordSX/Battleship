@@ -8,8 +8,6 @@ namespace Battleship\App\Database\Entity;
 class GameStatusEntity extends AbstractEntity
 {
     protected ?int $id;
-    protected int $status;
-    protected string $description;
 
     protected array $data;
 

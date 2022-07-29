@@ -9,10 +9,6 @@ namespace Battleship\App\Database\Entity;
 class GameEntity extends AbstractEntity
 {
     protected ?int $id;
-    protected bool $turn;
-    protected int $gameStatusId;
-    protected int $firstPlayerId;
-    protected int $secondPlayerId;
 
     protected array $data;
 

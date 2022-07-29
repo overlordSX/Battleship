@@ -5,11 +5,6 @@ namespace Battleship\App\Database\Entity;
 class ShipPlacementEntity extends AbstractEntity
 {
     protected ?int $id;
-    protected int $coordinate_x;
-    protected int $coordinate_y;
-    protected bool $orientation;
-    protected int $shipId;
-    protected int $gameFieldId;
 
     protected array $data;
 

@@ -5,8 +5,6 @@ namespace Battleship\App\Database\Entity;
 class ShipEntity extends AbstractEntity
 {
     protected ?int $id;
-    protected string $name;
-    protected int $size;
 
     protected array $data;
 

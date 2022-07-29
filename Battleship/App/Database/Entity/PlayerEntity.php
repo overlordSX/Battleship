@@ -5,7 +5,6 @@ namespace Battleship\App\Database\Entity;
 class PlayerEntity extends AbstractEntity
 {
     protected ?int $id;
-    protected string $code;
 
     protected array $data;
 
