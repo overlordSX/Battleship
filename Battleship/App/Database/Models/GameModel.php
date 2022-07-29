@@ -22,6 +22,8 @@ class GameModel extends AbstractModel
     protected string $tableName = 'game';
     protected string $entityClassName = GameEntity::class;
 
+    protected GameEntity $currentGame;
+
     /**
      * @throws Exception
      */
@@ -32,8 +34,7 @@ class GameModel extends AbstractModel
         $firstPlayer = $playerModel->createPlayer();
         $secondPlayer = $playerModel->createPlayer();
 
-        $gameModel = new GameModel();
-        $currentGame = $gameModel->createNewGame($firstPlayer->getId(), $secondPlayer->getId());
+        $currentGame = $this->createNewGame($firstPlayer->getId(), $secondPlayer->getId());
 
         $gameFieldModel = new GameFieldModel();
         $gameFieldModel->create($currentGame->getId(), $firstPlayer->getId());
@@ -62,8 +63,7 @@ class GameModel extends AbstractModel
     ])]
     public function getInfo($gameId, $playerCode): array
     {
-        $gameModel = new GameModel();
-        $currentGame = $gameModel->getGameById($gameId);
+        $currentGame = $this->getGameById($gameId);
 
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
@@ -202,6 +202,19 @@ class GameModel extends AbstractModel
             ->query()
             ->where('id', '=', $gameId)
             ->fetch();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setCurrent($gameId): void
+    {
+        $this->currentGame = $this->getGameById($gameId);
+    }
+
+    public function getCurrent(): GameEntity
+    {
+        return $this->currentGame;
     }
 
     protected function getRandomTurn(): bool
