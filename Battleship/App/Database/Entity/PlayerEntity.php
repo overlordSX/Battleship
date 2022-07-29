@@ -8,6 +8,10 @@ class PlayerEntity extends AbstractEntity
 
     protected array $data;
 
+    protected GameEntity $game;
+    protected PlayerEntity $player;
+
+
     public function __construct(array $row)
     {
         $this->data = $row;
