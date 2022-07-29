@@ -45,6 +45,12 @@ class PlayerModel extends AbstractModel
             ->fetch();
     }
 
+    public function isFirstPlayerIsCurrent(int $firstPlayerId, int $currentPlayerId): bool
+    {
+        return $firstPlayerId === $currentPlayerId;
+
+    }
+
 
     /**
      * @param GameEntity $currentGame
@@ -54,8 +60,7 @@ class PlayerModel extends AbstractModel
      */
     public function getEnemyPlayer(GameEntity $currentGame, PlayerEntity $currentPlayer): AbstractEntity
     {
-        $isFirstPlayerIsCurrent = $currentGame->getFirstPlayerId() === $currentPlayer->getId();
-        $enemyId = $isFirstPlayerIsCurrent
+        $enemyId = $this->isFirstPlayerIsCurrent($currentGame->getFirstPlayerId(), $currentPlayer->getId())
             ? $currentGame->getSecondPlayerId() : $currentGame->getFirstPlayerId();
         return $this->getPlayerById($enemyId);
     }
@@ -68,9 +73,8 @@ class PlayerModel extends AbstractModel
      */
     public function isCurrentReady(GameEntity $currentGame, PlayerEntity $currentPlayer): bool
     {
-        $isFirstPlayerIsCurrent = $currentGame->getFirstPlayerId() === $currentPlayer->getId();
-        return $isFirstPlayerIsCurrent
-            ? $currentGame->isFirstReady(): $currentGame->isSecondReady();
+        return $this->isFirstPlayerIsCurrent($currentGame->getFirstPlayerId(), $currentPlayer->getId())
+            ? $currentGame->isFirstReady() : $currentGame->isSecondReady();
     }
 
 
@@ -81,9 +85,8 @@ class PlayerModel extends AbstractModel
      */
     public function isMyTurn(GameEntity $currentGame, PlayerEntity $currentPlayer): bool
     {
-        $isFirstPlayerIsCurrent = $currentGame->getFirstPlayerId() === $currentPlayer->getId();
-        return $isFirstPlayerIsCurrent
-            ? $currentGame->getTurn() === false: $currentGame->getTurn() === true;
+        return $this->isFirstPlayerIsCurrent($currentGame->getFirstPlayerId(), $currentPlayer->getId())
+            ? $currentGame->isFirstPlayerTurn() : $currentGame->isSecondPlayerTurn();
     }
 
     /**
