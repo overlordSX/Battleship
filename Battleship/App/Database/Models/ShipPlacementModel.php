@@ -5,6 +5,7 @@ namespace Battleship\App\Database\Model;
 use Battleship\App\Database\Entity\AbstractEntity;
 use Battleship\App\Database\Entity\GameEntity;
 use Battleship\App\Database\Entity\PlayerEntity;
+use Battleship\App\Database\Entity\ShipEntity;
 use Battleship\App\Database\Entity\ShipPlacementEntity;
 use JetBrains\PhpStorm\ArrayShape;
 
@@ -32,12 +33,18 @@ class ShipPlacementModel extends AbstractModel
 
     protected array $firedShots = [];
 
+    /**
+     * @throws \Exception
+     */
     protected function setGame($gameId): void
     {
         $gameModel = new GameModel();
         $this->game = $gameModel->getGameById($gameId);
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function setPlayer($playerCode): void
     {
         $playerModel = new PlayerModel();
@@ -130,8 +137,6 @@ class ShipPlacementModel extends AbstractModel
 
         $this->setGame($gameId);
         $this->setPlayer($playerCode);
-
-        $success = [];
 
 
         $isArray = isset($_POST['ships']);
@@ -255,7 +260,8 @@ class ShipPlacementModel extends AbstractModel
             }
         } else {
             for ($i = 0; $i < $placedShip->getCustom('size'); $i++) {
-                $visibility = $firedShots[$x][$y + $i];
+                $visibility = $firedShots[$x][$y + $i] ?? 0;
+
                 $field[$x][$y + $i] = [
                     $forEnemy && $visibility || !$forEnemy ? $placedShipName : 'empty',
                     $visibility
@@ -346,15 +352,17 @@ class ShipPlacementModel extends AbstractModel
     protected function placeShip(array $ship): bool
     {
 
+        //TODO что можно будет проверить
         // тип-номер корабля можно будет проверить regex ^[1-4]-[1-4]$
-//        $coordinateX ??= (int)$_POST['x']; //int, 0 <= x <= 9,
-//        $coordinateY ??= (int)$_POST['y']; //int, 0 <= y <= 9,
+        // $coordinateX ??= (int)$_POST['x']; //int, 0 <= x <= 9,
+        // $coordinateY ??= (int)$_POST['y']; //int, 0 <= y <= 9,
 
         $coordinateX = $ship['x'];
         $coordinateY = $ship['y'];
 
         $shipName = $ship['ship'];
-        //TODO из за того что непонятно откуда берется запятая с фронта
+
+        //это из за того что непонятно откуда берется запятая с фронта
         $shipName = substr($shipName, 0, 3);
 
         $orientation = ($ship['orientation'] === 'horizontal');
@@ -379,7 +387,7 @@ class ShipPlacementModel extends AbstractModel
         // если не стоит -> поставить.
 
         if ($this->isAlreadyPlaced($currentGameField->getId(), $currentShip->getId())) {
-            //TODO получается тут будет проверка на пересечение
+            //TODO а где будет проверка на пересечение?
             $placedShip = $this->getPlacedShip($currentGameField->getId(), $currentShip->getId());
 
             if ($placedShip->getOrientation() === $oldOrientation) {
@@ -433,5 +441,34 @@ class ShipPlacementModel extends AbstractModel
             ->where('ship_id', '=', $shipId)
             ->fetchCount();
 
+    }
+
+    /**
+     * @param int $coordinateX
+     * @param int $coordinateY
+     * @return ShipEntity
+     * @throws \Exception
+     */
+    public function getShip(int $coordinateX, int $coordinateY): AbstractEntity
+    {
+        $field = $this->getField();
+
+        $shipName = $field[$coordinateX][$coordinateY][0];
+
+        $shipModel = new ShipModel();
+        return $shipModel->getByName($shipName);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getStartCell(ShipEntity $ship): array
+    {
+
+        return $this->query()
+            ->select('coordinate_x as firstX', 'coordinate_y as firstY', 'orientation')
+            ->where('game_field_id', '=', $this->gameFieldId)
+            ->where('ship_id', '=', $ship->getId())
+            ->fetchToArray();
     }
 }
