@@ -76,18 +76,16 @@ class GameModel extends AbstractModel
         $myGameField = $gameFieldModel->getByGameAndPlayer($gameId, $currentPlayer->getId());
         $enemyGameField = $gameFieldModel->getByGameAndPlayer($gameId, $enemyPlayer->getId());
 
-        //TODO здесь типо получать только расположение кораблей
         $myFieldAndUsedPlaces = new ShipPlacementModel();
         $myFieldAndUsedPlaces->getFieldAndUsedPlaces($myGameField->getId());
 
         $enemyFieldAndUsedPlaces = new ShipPlacementModel();
         $enemyFieldAndUsedPlaces->getFieldAndUsedPlaces($enemyGameField->getId(), true);
 
-        //TODO как нибудь соеденить массивы расположения кораблей и расположения выстрелов,
-        // чтобы получалось полное поле с кораблями и выстрелами
+
+        //TODO а где делать финиш игры, когда все корабли выбиты
 
 
-        /*var_dump($currentGame);*/
         return [
             'game' => [
                 'id' => $currentGame->getId(),
@@ -144,13 +142,21 @@ class GameModel extends AbstractModel
 
         //TODO где подходящее место для этого?
         if ($ready['enemyReady']) {
-            $this->update(
-                [['id' => ['=' => $gameId]]],
-                [['game_status_id' => 2]]
-            );
+            $this->setGameStatus($gameId, 2);
         }
 
         return $ready;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setGameStatus($gameId, $gameStatus): bool
+    {
+        return $this->update(
+            [['id' => ['=' => $gameId]]],
+            [['game_status_id' => $gameStatus]]
+        );
     }
 
     /**
