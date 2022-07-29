@@ -8,7 +8,6 @@ Router::route('GET', ['/db?(.+)'], [Con\DatabaseController::class, 'createTables
 
 Router::route('POST', ['/api/start/'], [Con\GameController::class, 'startNewGame']);
 
-//TODO из фронта просит запрос без /, а в ТЗ со /
 Router::route('POST', ['/api/status/(\d+)/(.+)'], [Con\GameController::class, 'getStatus']);
 
 Router::route('POST', ['/api/place-ship/(\d+)/(.+)'], [Con\PlacementController::class, 'placeShip']);
