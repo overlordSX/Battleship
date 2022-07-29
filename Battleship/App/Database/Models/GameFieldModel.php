@@ -30,7 +30,7 @@ class GameFieldModel extends AbstractModel
     /**
      * @param $gameId
      * @param $playerId
-     * @return PlayerEntity
+     * @return GameFieldEntity
      * @throws \Exception
      */
     public function getByGameAndPlayer($gameId, $playerId): AbstractEntity
