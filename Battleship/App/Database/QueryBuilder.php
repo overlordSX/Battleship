@@ -28,6 +28,9 @@ class QueryBuilder
 
     protected array $queryParams = [];
 
+    protected array $where = [];
+    protected array $set = [];
+
     protected string $className;
     protected string $mainTableName;
 
@@ -42,9 +45,6 @@ class QueryBuilder
         $this->className = $className ?: '';
     }
 
-
-    protected array $where = [];
-    protected array $set = [];
 
     public function clear(): static
     {
