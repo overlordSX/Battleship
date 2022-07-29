@@ -3,7 +3,6 @@
 namespace Battleship\App\Database\Model;
 
 use Battleship\App\Database\Entity\ShotEntity;
-use JetBrains\PhpStorm\ArrayShape;
 
 class ShotModel extends AbstractModel
 {
@@ -38,7 +37,6 @@ class ShotModel extends AbstractModel
     /**
      * @throws \Exception
      */
-    #[ArrayShape(['success' => "bool", 'hit' => "bool", 'kill' => "bool"])]
     public function makeShot($gameId, $playerCode): array
     {
         $success = [];
@@ -51,25 +49,21 @@ class ShotModel extends AbstractModel
 
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
+
+        //TODO где должны быть проверки?
+
+        // проверка на очередь
+        if (!$playerModel->isMyTurn($currentGame, $currentPlayer)) {
+            return ['success' => false, 'message' => 'Дождитесь своей очереди'];
+        }
+
         $enemyPlayer = $playerModel->getEnemyPlayer($currentGame, $currentPlayer);
 
         $gameFieldModel = new GameFieldModel();
         $enemyGameField = $gameFieldModel->getByGameAndPlayer($gameId, $enemyPlayer->getId());
 
+        //TODO нужно проверка на то что сюда уже стреляли
         $success['success'] = $this->realize($coordinateX, $coordinateY, $enemyGameField->getId());
-
-        /*$shipPlacementModel = new ShipPlacementModel();
-        var_dump($shipPlacementModel->query()
-            ->join('shot','game_field_id','=','game_field_id')
-            ->where('game_field_id','=',$enemyGameField->getId())
-            ->fetchAllToArray());*/
-        /*$shot = new QueryBuilder();
-        JsonUtil::makeAnswer($shot->selectRow(
-            'select *
-                    from shot join ship_placement on shot.game_field_id = ship_placement.game_field_id
-                    where shot.game_field_id = ' . $enemyGameField->getId() . ' and  ship_placement.game_field_id = ' . $enemyGameField->getId()
-            . ' and shot.coordinate_x = ship_placement.coordinate_x and shot.coordinate_y = ship_placement.coordinate_y '
-        )->fetchAllToArray());*/
 
         //TODO выстрел уже произошел, теперь нужно посмотреть попал или нет
         // в enemyField придет с отмеченным выстрелом уже
@@ -77,113 +71,67 @@ class ShotModel extends AbstractModel
         $enemyShips->getFieldAndUsedPlaces($enemyGameField->getId());
         $enemyField = $enemyShips->getField();
 
-        //$isHereShip = $enemyShips->isHereShip($coordinateX, $coordinateY);
         if (!$enemyShips->isHereShip($coordinateX, $coordinateY)) {
-            //$success['success'] = $this->realize($coordinateX, $coordinateY, $enemyGameField->getId());
             $gameModel->changeTurn($gameId);
             return $success;
         }
 
+        $enemyShip = $enemyShips->getShip($coordinateX, $coordinateY);
+
         $success['hit'] = true;
 
-        $shipName = $enemyField[$coordinateX][$coordinateY][0];
-        $shipSize = (int)substr($shipName, 0, 1);
+        $shipName = $enemyShip->getName();
+        $shipSize = $enemyShip->getSize();
 
         if ($shipSize === 1) {
-
-            /*$startFillX = $coordinateX;
-            $startFillY = $coordinateY;
-
-
-            if ($coordinateX > 0 && $coordinateX < 9) {
-                $startFillX = $coordinateX - 1;
-            }
-            if ($coordinateY > 0 && $coordinateY < 9) {
-                $startFillY = $coordinateY - 1;
-            }
-
-            $endX = $startFillX + $shipSize + 1;
-            $endY = $startFillY + $shipSize + 1;
-
-            for ($x = $startFillX; $x <= $endX; $x++) {
-                for ($y = $startFillY; $y <= $endY; $y++) {
-                    $success['success'] = $this->realize($x, $y, $enemyGameField->getId());
-                }
-            }*/
-
-            //$success['success'] = $this->fillShots($coordinateX, $coordinateY,$shipSize, $enemyGameField->getId());
-
 
             $success['success'] = $this->fillShots($coordinateX, $coordinateY, $shipSize, $enemyGameField->getId());
             $success['kill'] = true;
             return $success;
         }
 
-        /*for ($i = 1; $i < $shipSize; $i++) {
-            if ($enemyField[$coordinateX + $i][$coordinateY][0] !== $shipName) {
-                //$direction =
-                $success['success'] = false;
-            } elseif ($enemyField[$coordinateX + $i][$coordinateY][0] !== $shipName)
+        $startCell = $enemyShips->getStartCell($enemyShip);
+        $firstX = $startCell['firstX'];
+        $firstY = $startCell['firstY'];
+        $isHorizontal = $startCell['orientation'];
 
-        }*/
+        $shotPartsCount = 0;
 
-        $firstX = -1;
-        $firstY = -1;
-        for ($i = 1; $i < 10; $i++) {
-            for ($j = 1; $j < 10; $j++) {
-                if ($enemyField[$i][$j][0] === $shipName) {
-                    /*$firstCell['x'] = $i;
-                    $firstCell['y'] = $j;*/
-                    $firstX = $i;
-                    $firstY = $j;
-                    break 2;
+        if ($isHorizontal) {
+            for ($i = 0; $i < $shipSize; $i++) {
+                if ($firstX + $i >= 0 && $firstX + $i <= 9 && $firstY >= 0 && $firstY <= 9) {
+                    $cell = $enemyField[$firstX + $i][$firstY];
+
+                    if ($cell[0] === $shipName && $cell[1] !== 1) {
+                        return $success;
+                    }
+
+                    if ($cell[0] === $shipName && $cell[1] === 1) {
+                        $shotPartsCount++;
+                    }
                 }
             }
-        }
+        } else {
+            for ($i = 0; $i < $shipSize; $i++) {
 
-        //TODO в данный момент success 'success' => true, 'hit' = true
-
-        $isHorizontal = true;
-        $count = 0;
-        for ($i = 0; $i < $shipSize; $i++) {
-
-            if ($firstX + $i >= 0 && $firstX + $i <= 9 && $firstY >= 0 && $firstY <= 9) {
-                $cell = $enemyField[$firstX + $i][$firstY];
-
-                if ($cell[0] === $shipName && $cell[1] !== 1) {
-                    //$success['success'] = $this->realize($coordinateX, $coordinateY, $enemyGameField->getId());
-                    return $success;
-                }
-
-                $count++;
-            }
-        }
-        $count = 0;
-        for ($i = 0; $i < $shipSize; $i++) {
-
-            if ($firstX >= 0 && $firstX <= 9 && $firstY + $i >= 0 && $firstY + $i <= 9) {
                 $cell = $enemyField[$firstX][$firstY + $i];
+
                 if ($cell[0] === $shipName && $cell[1] !== 1) {
-                    //$success['success'] = $this->realize($coordinateX, $coordinateY, $enemyGameField->getId());
                     return $success;
                 }
-                $count++;
-                $isHorizontal = false;
+
+                if ($cell[0] === $shipName && $cell[1] === 1) {
+                    $shotPartsCount++;
+                }
             }
         }
 
-        if ($count === $shipSize) {
-
+        if ($shotPartsCount === $shipSize) {
             $success['success'] = $this->fillShots($firstX, $firstY, $shipSize, $enemyGameField->getId(), $isHorizontal);
-
             $success['kill'] = true;
+
             return $success;
         }
-
-
-        //TODO ?
-        // эталон отсылает hit:bool и еще может kill:bool
-        // это же получается все нужно тут делать, и если убил поля вокруг корабля отмечать отстрелянными
 
         return $success;
     }
@@ -199,45 +147,9 @@ class ShotModel extends AbstractModel
      */
     public function fillShots($coordinateX, $coordinateY, $shipSize, $gameFieldId, $isHorizontal = true): bool
     {
-        /* $startFillX = $coordinateX;
-         $startFillY = $coordinateY;
-
-         if ($coordinateX > 0) {
-             $startFillX = $coordinateX - 1;
-         }
-         if ($coordinateY > 0) {
-             $startFillY = $coordinateY - 1;
-         }
-
-         if ($isHorizontal) {
-             $endX = $startFillX + $shipSize + 1;
-             $endY = $startFillY + 1;
-         } else {
-             $endX = $startFillX + 1;
-             $endY = $startFillY + $shipSize + 1;
-         }
-
-         if ($endX > 9) {
-             $endX = 9;
-         }
-         if ($endY > 9) {
-             $endY = 9;
-         }
-
-         $shot = [];
-
-         for ($x = $startFillX; $x <= $endX; $x++) {
-             for ($y = $startFillY; $y <= $endY; $y++) {
-                 if (!$this->realize($x, $y, $gameFieldId)) {
-                     return false;
-                 }
-                 $shot[$x][$y] = 1;
-             }
-         }*/
-
         //TODO + ориентация
-        $width = !$isHorizontal ? $shipSize : 1;
-        $height = !$isHorizontal ? 1 : $shipSize;
+        $width = $isHorizontal ? $shipSize : 1;
+        $height = $isHorizontal ? 1 : $shipSize;
 
         for ($x = $coordinateX - 1; $x <= $coordinateX + $width; $x++) {
             for ($y = $coordinateY - 1; $y <= $coordinateY + $height; $y++) {
@@ -249,8 +161,6 @@ class ShotModel extends AbstractModel
             }
         }
 
-        //JsonUtil::makeAnswer($shot);
-
         return true;
     }
 
@@ -259,6 +169,9 @@ class ShotModel extends AbstractModel
      */
     public function realize(int $coordinateX, int $coordinateY, int $gameFieldId): bool
     {
+        //TODO по сути у меня нет никакой проверки на то что выстрел произойдет в ту же координату,
+        // и если в эту функцию придут координаты по которым уже был выстрел, то он будет добавлен
+        // так как нет ограничения на уникальность координат
         return $this->insert([
             'coordinate_x' => $coordinateX,
             'coordinate_y' => $coordinateY,
