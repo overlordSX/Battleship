@@ -13,6 +13,9 @@ class PlacementController implements ControllerInterface
      */
     public function placeShip(int $gameId, string $playerCode)
     {
+        //Validator::make([data],[rules])
+        //Validator::getMessages ?empty? -> Json else дальше
+
         $shipPlacementModel = new ShipPlacementModel();
         $success = $shipPlacementModel->makePlacement($gameId, $playerCode);
 
