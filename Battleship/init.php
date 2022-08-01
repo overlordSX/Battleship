@@ -30,6 +30,13 @@ Autoloader::register('Battleship/App/Database/Models/ShipPlacementModel');
 Autoloader::register('Battleship/App/Database/Models/ShotModel');
 Autoloader::register('Battleship/App/Database/Models/MessageModel');
 
+Autoloader::register('Battleship/App/Validator/RuleInterface');
+Autoloader::register('Battleship/App/Validator/Rules/IsGameExist');
+Autoloader::register('Battleship/App/Validator/Rules/IsPlayerExist');
+Autoloader::register('Battleship/App/Validator/Rules/IsPosInt');
+Autoloader::register('Battleship/App/Validator/Rules/IsGameWithPlayerExist');
+Autoloader::register('Battleship/App/Validator/Rules/IsString');
+Autoloader::register('Battleship/App/Validator/Validator');
 
 Autoloader::register('Battleship/App/Controllers/Util/JsonUtil');
 Autoloader::register('Battleship/App/Controllers/ControllerInterface');
