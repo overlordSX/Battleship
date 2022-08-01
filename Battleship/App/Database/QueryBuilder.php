@@ -140,7 +140,7 @@ class QueryBuilder
     protected function set(string $attribute, string|int $newValue): static
     {
 
-        $namedPlaceholder = ':' . $attribute . 'Set';
+        $namedPlaceholder = ':' . str_replace('.', '',$attribute) . 'Set';
         $this->set[$attribute] = $namedPlaceholder;
 
         $this->queryParams[$namedPlaceholder] = $newValue;
@@ -161,7 +161,7 @@ class QueryBuilder
     {
         $named = [];
         foreach ($keys as $key) {
-            $named[] = ':' . $key;
+            $named[] = ':' . str_replace('.', '', $key);
         }
         return $named;
     }
@@ -247,9 +247,9 @@ class QueryBuilder
         string $secondaryTableField
     ): static
     {
-        $this->query['join'] .= ' JOIN ' . $secondaryTable . ' ON ' . $this->mainTableName . '.' . $mainTableField .
-            ' ' . $condition . ' ' .
-            $secondaryTable . '.' . $secondaryTableField . ' ';
+        $this->query['join'] .= ' JOIN ' . $secondaryTable . ' ON ' . $this->mainTableName . '.' . $mainTableField
+            . ' ' . $condition . ' '
+            . $secondaryTable . '.' . $secondaryTableField . ' ';
 
 
         return $this;
@@ -257,7 +257,7 @@ class QueryBuilder
 
     public function joinFromRow($joinRow): static
     {
-        $this->query['join'] .= $joinRow;
+        $this->query['join'] .= ' ' . $joinRow . ' ';
 
         return $this;
     }
@@ -269,7 +269,55 @@ class QueryBuilder
         string|int $value
     ): static
     {
-        $namedPlaceholder = ':' . $attribute . 'Where';
+
+        $namedPlaceholder = ':' .  str_replace('.', '',$attribute) . 'Where';
+        $this->queryParams[$namedPlaceholder] = $value;
+
+        if ($this->where) {
+            $this->where['&&||'] = 'and';
+        }
+        $this->where[$attribute] = ['cond' => $condition, 'val' => $namedPlaceholder];
+
+        return $this;
+    }
+
+    protected function assocToList($array): array
+    {
+        $temp = [];
+        foreach ($array as $item) {
+            $temp[] = $item;
+        }
+        return $temp;
+    }
+
+    public function whereBrackets(callable $callback, string|int $param, string $condition = 'and'): static
+    {
+        if ($this->where) {
+            //$this->where = [array_values($this->where)];
+            $this->where['&&||'] = $condition;
+        }
+
+
+        $queryBuilder = new QueryBuilder();
+        $callback($queryBuilder, $param);
+        $bracketsWhere = $queryBuilder->where;
+
+        $this->where['()'] = $bracketsWhere;
+
+        $this->queryParams = array_merge($this->queryParams, $queryBuilder->queryParams);
+
+        return $this;
+    }
+
+    public function orWhere(
+        string     $attribute,
+        string     $condition,
+        string|int $value
+    ): static
+    {
+
+        $this->where['&&||'] = 'or';
+        $namedPlaceholder = ':' .  str_replace('.', '',$attribute) . 'WhereOr';
         $this->queryParams[$namedPlaceholder] = $value;
 
         $this->where[$attribute] = ['cond' => $condition, 'val' => $namedPlaceholder];
@@ -357,14 +405,14 @@ class QueryBuilder
         return $this;
     }
 
-    public function limit(string $limit): static
+    public function limit(int $limit): static
     {
         $this->query['limit'] = ' limit ' . $limit;
 
         return $this;
     }
 
-    public function offset(string $offset): static
+    public function offset(int $offset): static
     {
         $this->query['offset'] = ' offset ' . $offset;
 
@@ -385,16 +433,39 @@ class QueryBuilder
             $this->query['set'] = ' set ' . implode(' , ', $setArr) . ' ';
         }
 
-        $whereArr = [];
+        //TODO из этого бы сделать рекурсивную функцию
+        $makeStr = [];
+        foreach ($this->where as $attr => $elem) {
 
-        foreach ($this->where as $attr => $condAndVal) {
-            $cond = $condAndVal['cond'];
-            $val = $condAndVal['val'];
-            $whereArr[] = $attr . ' ' . $cond . ' ' . $val;
+            if ($attr === '&&||') {
+                $makeStr[] = $elem;
+                continue;
+            }
+
+            if ($attr === '()') {
+                $makeStr[] = '(';
+                foreach ($elem as $attrIn => $condAndValIn) {
+                    if ($attrIn === '&&||') {
+                        $makeStr[] = $condAndValIn;
+                        continue;
+                    }
+                    $cond = $condAndValIn['cond'];
+                    $val = $condAndValIn['val'];
+                    $makeStr[] = $attrIn . ' ' . $cond . ' ' . $val;
+                }
+                $makeStr[] = ')';
+                continue;
+            }
+
+            $cond = $elem['cond'];
+            $val = $elem['val'];
+            $makeStr[] = $attr . ' ' . $cond . ' ' . $val;
+
         }
 
-        if ($whereArr) {
-            $this->query['where'] = ' where ' . implode(' and ', $whereArr) . ' ';
+
+        if ($makeStr) {
+            $this->query['where'] = ' where ' . implode(' ', $makeStr) . ' ';
         }
 
         if ($this->query['from'] && !$this->query['select']) {
