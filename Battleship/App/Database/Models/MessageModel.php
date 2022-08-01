@@ -85,6 +85,7 @@ class MessageModel extends AbstractModel
             ->where('created_at', '>', $lastTime)
             ->select('player_id', 'created_at', 'content')
             ->orderBy('created_at', 'asc')
+            ->limit(500)
             ->fetchAll();
     }
 }
