@@ -5,6 +5,12 @@ namespace Battleship\App\Controllers;
 
 use Battleship\App\Controllers\Util\JsonUtil;
 use Battleship\App\Database\Model\GameModel;
+use Battleship\App\Validator\Rule\IsGameExist;
+use Battleship\App\Validator\Rule\IsGameWithPlayerExist;
+use Battleship\App\Validator\Rule\IsPlayerExist;
+use Battleship\App\Validator\Rule\IsPosInt;
+use Battleship\App\Validator\Rule\IsString;
+use Battleship\App\Validator\Validator;
 use Exception;
 
 class GameController implements ControllerInterface
@@ -36,6 +42,31 @@ class GameController implements ControllerInterface
      */
     public function getStatus($gameId, $playerCode): void
     {
+        $statusValidator = new Validator();
+        $statusValidator->make(
+            [
+                'gameId' => (int)$gameId,
+                'playerCode' => (string)$playerCode,
+                'gameAndPlayer' => ['gameId' => $gameId, 'playerCode' => $playerCode]
+            ],
+            [
+                // gameId & gameAndPlayer: проверять существование не обязательно
+                // так как если их не указать роутинг не будет обрабатывать запрос
+                'gameId' => [new IsPosInt(), new IsGameExist()],
+                'playerCode' => [new IsString(), new IsPlayerExist()],
+                'gameAndPlayer' => [new IsGameWithPlayerExist()]
+            ]
+        );
+
+        $errors = $statusValidator->isValid() ? [] : $statusValidator->getErrors();
+        if ($errors) {
+            $info['success'] = false;
+            $info['error'] = 1;
+            $info['message'] = implode("\n", array_values($errors));
+
+            JsonUtil::makeAnswer($info);
+        }
+
         $gameModel = new GameModel();
         $info = $gameModel->getInfo($gameId, $playerCode);
 
@@ -47,6 +78,22 @@ class GameController implements ControllerInterface
      */
     public function setReady($gameId, $playerCode): void
     {
+        $statusValidator = new Validator();
+        $statusValidator->make(
+            [
+                'gameId' => (int)$gameId,
+                'playerCode' => (string)$playerCode,
+                'gameAndPlayer' => ['gameId' => $gameId, 'playerCode' => $playerCode]
+            ],
+            [
+                // gameId & gameAndPlayer: проверять существование не обязательно
+                // так как если их не указать роутинг не будет обрабатывать запрос
+                'gameId' => [new IsPosInt(), new IsGameExist()],
+                'playerCode' => [new IsString(), new IsPlayerExist()],
+                'gameAndPlayer' => [new IsGameWithPlayerExist()]
+            ]
+        );
+
         $gameModel = new GameModel();
         $ready = $gameModel->playersReady($gameId, $playerCode);
 
