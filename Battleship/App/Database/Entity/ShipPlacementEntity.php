@@ -38,7 +38,7 @@ class ShipPlacementEntity extends AbstractEntity
     }
 
     /**
-     * @return bool
+     * @return bool true -> horizontal
      */
     public function getOrientation(): bool
     {
