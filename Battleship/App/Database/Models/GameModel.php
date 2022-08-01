@@ -22,6 +22,10 @@ class GameModel extends AbstractModel
     protected string $tableName = 'game';
     protected string $entityClassName = GameEntity::class;
 
+    public const PLACE_SHIP_GAME_STATUS = 1;
+    public const BATTLE_GAME_STATUS = 2;
+    public const END_GAME_STATUS = 3;
+
     protected GameEntity $currentGame;
 
     /**
@@ -77,14 +81,10 @@ class GameModel extends AbstractModel
         $enemyGameField = $gameFieldModel->getByGameAndPlayer($gameId, $enemyPlayer->getId());
 
         $myFieldAndUsedPlaces = new ShipPlacementModel();
-        $myFieldAndUsedPlaces->getFieldAndUsedPlaces($myGameField->getId());
+        $myFieldAndUsedPlaces->fillFieldAndUsedPlaces($myGameField->getId());
 
         $enemyFieldAndUsedPlaces = new ShipPlacementModel();
-        $enemyFieldAndUsedPlaces->getFieldAndUsedPlaces($enemyGameField->getId(), true);
-
-
-        //TODO а где делать финиш игры, когда все корабли выбиты
-
+        $enemyFieldAndUsedPlaces->fillFieldAndUsedPlaces($enemyGameField->getId(), true);
 
         return [
             'game' => [
@@ -140,9 +140,8 @@ class GameModel extends AbstractModel
             $ready['enemyReady'] = $currentGame->isFirstReady();
         }
 
-        //TODO где подходящее место для этого?
         if ($ready['enemyReady']) {
-            $this->setGameStatus($gameId, 2);
+            $this->setGameStatus($gameId, self::BATTLE_GAME_STATUS);
         }
 
         return $ready;
@@ -169,7 +168,7 @@ class GameModel extends AbstractModel
     {
         $this->insert([
             'turn' => $this->getRandomTurn(),
-            'game_status_id' => 1,
+            'game_status_id' => self::PLACE_SHIP_GAME_STATUS,
             'first_player_id' => $firstPlayerId,
             'second_player_id' => $secondPlayerId
         ]);
