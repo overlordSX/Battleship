@@ -13,6 +13,12 @@ class PlacementController implements ControllerInterface
      */
     public function placeShip(int $gameId, string $playerCode)
     {
+        //TODO должна быть проверка что сейчас 2й статус игры + игрок не нажимал что готов
+        //TODO хотя если отправить только название корабля, то он должен исчезнуть с поля
+        //TODO сделать класс Resource, там toArray приведение к массиву разными классами, вроде это про JSON
+        // это про ship-placement
+        // в двух вариантах
+
         //Validator::make([data],[rules])
         //Validator::getMessages ?empty? -> Json else дальше
 
