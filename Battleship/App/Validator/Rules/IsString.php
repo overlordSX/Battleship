@@ -9,7 +9,7 @@ class IsString implements RuleInterface
 
     public function pass($value): bool
     {
-        return !is_null($value) and is_string($value);
+        return is_string($value);
     }
 
     public function message(): string
