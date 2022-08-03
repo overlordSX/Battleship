@@ -22,6 +22,6 @@ class IsInScope implements RuleInterface
 
     public function message(): string
     {
-        return 'Координата должна быть от ' . $this->min . ', до ' . $this->max;
+        return 'Выход за рамки поля';
     }
 }
