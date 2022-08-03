@@ -274,7 +274,7 @@ class QueryBuilder
         $this->queryParams[$namedPlaceholder] = $value;
 
         if ($this->where) {
-            $this->where['&&||'] = 'and';
+            $this->where[] = ['&&||' => 'and'];
         }
         $this->where[$attribute] = ['cond' => $condition, 'val' => $namedPlaceholder];
 
@@ -293,8 +293,7 @@ class QueryBuilder
     public function whereBrackets(callable $callback, string|int $param, string $condition = 'and'): static
     {
         if ($this->where) {
-            //$this->where = [array_values($this->where)];
-            $this->where['&&||'] = $condition;
+            $this->where[] = ['&&||' => $condition];
         }
 
 
@@ -302,7 +301,7 @@ class QueryBuilder
         $callback($queryBuilder, $param);
         $bracketsWhere = $queryBuilder->where;
 
-        $this->where['()'] = $bracketsWhere;
+        $this->where[] = ['()' => $bracketsWhere];
 
         $this->queryParams = array_merge($this->queryParams, $queryBuilder->queryParams);
 
@@ -315,8 +314,7 @@ class QueryBuilder
         string|int $value
     ): static
     {
-
-        $this->where['&&||'] = 'or';
+        $this->where[] = ['&&||' => 'or'];
         $namedPlaceholder = ':' .  str_replace('.', '',$attribute) . 'WhereOr';
         $this->queryParams[$namedPlaceholder] = $value;
 
@@ -437,16 +435,16 @@ class QueryBuilder
         $makeStr = [];
         foreach ($this->where as $attr => $elem) {
 
-            if ($attr === '&&||') {
-                $makeStr[] = $elem;
+            if (isset($elem['&&||'])) {
+                $makeStr[] = $elem['&&||'];
                 continue;
             }
 
-            if ($attr === '()') {
+            if (isset($elem['()'])) {
                 $makeStr[] = '(';
-                foreach ($elem as $attrIn => $condAndValIn) {
-                    if ($attrIn === '&&||') {
-                        $makeStr[] = $condAndValIn;
+                foreach ($elem['()'] as $attrIn => $condAndValIn) {
+                    if (isset($condAndValIn['&&||'])) {
+                        $makeStr[] = $condAndValIn['&&||'];
                         continue;
                     }
                     $cond = $condAndValIn['cond'];
