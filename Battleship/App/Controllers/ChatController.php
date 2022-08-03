@@ -32,6 +32,11 @@ class ChatController implements ControllerInterface
     {
         $sendMessageRequest = new SendMessageRequest();
         $sendMessageRequest->validate(['gameId' => $gameId, 'playerCode' => $playerCode]);
+        $requestAnswer = $sendMessageRequest->answer();
+
+        if ($requestAnswer) {
+            JsonUtil::makeAnswer($requestAnswer);
+        }
 
         $messageModel = new MessageModel();
         $success['success'] = $messageModel->postNewMessage($gameId, $playerCode);
