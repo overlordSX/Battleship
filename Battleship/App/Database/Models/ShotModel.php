@@ -126,25 +126,19 @@ class ShotModel extends AbstractModel
 
         if ($isHorizontal) {
             for ($i = 0; $i < $shipSize; $i++) {
-                //TODO с валидными данными, такая проверка не нужна
-                if ($firstX + $i >= 0 && $firstX + $i <= ShipPlacementModel::FIELD_SIZE) {
-                    $cell = $enemyField[$firstX + $i][$firstY];
-                    if ($cell[1] !== self::SHOT_DOWN) {
-                        return $shotPartsCount;
-                    }
-                    $shotPartsCount++;
+                $cell = $enemyField[$firstX + $i][$firstY];
+                if ($cell[1] !== self::SHOT_DOWN) {
+                    return $shotPartsCount;
                 }
+                $shotPartsCount++;
             }
         } else {
             for ($i = 0; $i < $shipSize; $i++) {
-                //TODO с валидными данными, такая проверка не нужна
-                if ($firstY + $i >= 0 && $firstY + $i <= ShipPlacementModel::FIELD_SIZE) {
-                    $cell = $enemyField[$firstX][$firstY + $i];
-                    if ($cell[1] !== self::SHOT_DOWN) {
-                        return $shotPartsCount;
-                    }
-                    $shotPartsCount++;
+                $cell = $enemyField[$firstX][$firstY + $i];
+                if ($cell[1] !== self::SHOT_DOWN) {
+                    return $shotPartsCount;
                 }
+                $shotPartsCount++;
             }
         }
         return $shotPartsCount;

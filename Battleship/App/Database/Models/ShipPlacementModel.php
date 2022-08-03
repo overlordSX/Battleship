@@ -251,11 +251,7 @@ class ShipPlacementModel extends AbstractModel
 
         foreach ($firedShots as $x => $yVal) {
             foreach ($yVal as $y => $value) {
-                //TODO без этого у меня появлялась какая то дичь поле
-                // теперь данные должны быть валидными и эта проверка не требуется
-                if ($x >= 0 && $y >= 0 && $x <= self::FIELD_SIZE && $y <= self::FIELD_SIZE) {
                     $field[$x][$y][1] = $value;
-                }
             }
         }
 
