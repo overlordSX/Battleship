@@ -4,7 +4,10 @@ namespace Battleship\App\Controllers;
 
 
 use Battleship\App\Controllers\Util\JsonUtil;
+use Battleship\App\Database\Model\GameModel;
 use Battleship\App\Database\Model\ShipPlacementModel;
+use Battleship\App\Validator\Request\BaseShipPlacementRequest;
+use Battleship\App\Validator\Request\PlaceShipRequest;
 
 class PlacementController implements ControllerInterface
 {
@@ -13,14 +16,8 @@ class PlacementController implements ControllerInterface
      */
     public function placeShip(int $gameId, string $playerCode)
     {
-        //TODO должна быть проверка что сейчас 2й статус игры + игрок не нажимал что готов
-        //TODO хотя если отправить только название корабля, то он должен исчезнуть с поля
-        //TODO сделать класс Resource, там toArray приведение к массиву разными классами, вроде это про JSON
-        // это про ship-placement
-        // в двух вариантах
-
-        //Validator::make([data],[rules])
-        //Validator::getMessages ?empty? -> Json else дальше
+        $placeShipRequest = new PlaceShipRequest();
+        $placeShipRequest->validate(['gameId' => $gameId, 'playerCode' => $playerCode]);
 
         $shipPlacementModel = new ShipPlacementModel();
         $success = $shipPlacementModel->makePlacement($gameId, $playerCode);
@@ -31,8 +28,16 @@ class PlacementController implements ControllerInterface
     /**
      * @throws \Exception
      */
-    public function clearField($gameId, $playerCode)
+    public function clearField(int $gameId, string $playerCode)
     {
+        $clearFieldRequest = new BaseShipPlacementRequest();
+        $clearFieldRequest->validate(['gameId' => $gameId, 'playerCode' => $playerCode]);
+        $requestAnswer = $clearFieldRequest->answer();
+
+        if ($requestAnswer) {
+            JsonUtil::makeAnswer($requestAnswer);
+        }
+
         $field = new ShipPlacementModel();
         $success = $field->clearField($gameId, $playerCode);
 
