@@ -29,4 +29,16 @@ class ShipModel extends AbstractModel
             ->where('name', '=', $name)
             ->fetch();
     }
+
+    /**
+     * @param $shipName
+     * @return bool
+     * @throws \Exception
+     */
+    public function isShipExist($shipName): bool
+    {
+        return (bool)$this->query()
+            ->where('name', '=', $shipName)
+            ->fetchCount();
+    }
 }
