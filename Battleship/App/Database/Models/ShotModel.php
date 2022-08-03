@@ -43,8 +43,10 @@ class ShotModel extends AbstractModel
     {
         $success = [];
 
-        $coordinateX ??= $_POST['x'];
-        $coordinateY ??= $_POST['y'];
+        $coordinateX = isset($_POST['x'])
+            ? (int)htmlspecialchars($_POST['x'], ENT_QUOTES) : null;
+        $coordinateY = isset($_POST['y'])
+            ? (int)htmlspecialchars($_POST['y'], ENT_QUOTES) : null;
 
         $gameModel = new GameModel();
         $currentGame = $gameModel->getGameById($gameId);
@@ -52,19 +54,12 @@ class ShotModel extends AbstractModel
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
 
-        //TODO где должны быть проверки?
-
-        // проверка на очередь
-        if (!$playerModel->isMyTurn($currentGame, $currentPlayer)) {
-            return ['success' => false, 'message' => 'Дождитесь своей очереди'];
-        }
 
         $enemyPlayer = $playerModel->getEnemyPlayer($currentGame, $currentPlayer);
 
         $gameFieldModel = new GameFieldModel();
         $enemyGameField = $gameFieldModel->getByGameAndPlayer($gameId, $enemyPlayer->getId());
 
-        //TODO нужно проверка на то что сюда уже стреляли
         $success['success'] = $this->realize($coordinateX, $coordinateY, $enemyGameField->getId());
 
         $enemyShips = new ShipPlacementModel();
