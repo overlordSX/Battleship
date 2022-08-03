@@ -25,8 +25,7 @@ class MessageModel extends AbstractModel
      */
     public function postNewMessage($gameId, $playerCode): bool
     {
-        // TODO validation
-        $content = $_POST['message'];
+        $content = htmlspecialchars(substr($_POST['message'], 0, 250), ENT_QUOTES);
 
         $playerModel = new PlayerModel();
         $player = $playerModel->getPlayerByCode($playerCode);
@@ -47,7 +46,6 @@ class MessageModel extends AbstractModel
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
 
-        // TODO validation lastTime, gameId, PlayerCode
         $lastTime = isset($_GET['lastTime']) && (bool)$_GET['lastTime'] !== false ? (int)$_GET['lastTime'] : 0;
 
         $allMes = $this->getAllMessages($gameId, $lastTime);
