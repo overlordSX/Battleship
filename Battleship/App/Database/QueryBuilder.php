@@ -45,40 +45,6 @@ class QueryBuilder
         $this->className = $className ?: '';
     }
 
-
-    public function clear(): static
-    {
-        foreach ($this->query as $key => $value) {
-            $this->query[$key] = '';
-        }
-        return $this;
-    }
-
-
-    /**
-     * @param string $tableName имя таблицы
-     * @param array $tableColumns колонки таблицы
-     * @param array $params [[?,?,?],...] => (?,?,?),...
-     * @return bool true если запрос выполнен
-     */
-    public function insertMulti(string $tableName, array $tableColumns, array $params = []): bool
-    {
-
-        $this->query['insert'] =
-            'insert into ' .
-            $tableName .
-            ' ' .
-            $this->formatInsert($tableColumns) .
-            ' values ' .
-            $this->formatInsert(
-                $this->makePlaceholders($params)
-            );
-
-        $this->queryParams = $this->extractParams($params);
-
-        return $this->prepareAndExecute();
-    }
-
     /**
      * @param string $tableName
      * @param array $insert ['column' => value]
@@ -87,7 +53,6 @@ class QueryBuilder
     public function insert(string $tableName, array $insert): bool
     {
         $namedPlaceholders = $this->makeNamedPlaceholders(array_keys($insert));
-
 
         $this->query['insert'] =
             'insert into ' .
@@ -100,9 +65,14 @@ class QueryBuilder
         $this->queryParams = $insert;
 
         return $this->prepareAndExecute();
-
     }
 
+    public function insertFromRow(string $insertRow, array $params = []): bool
+    {
+        $this->query['insert'] = $insertRow;
+        $this->queryParams = $params;
+        return $this->prepareAndExecute();
+    }
 
     /**
      * @param string $tableName
@@ -140,7 +110,7 @@ class QueryBuilder
     protected function set(string $attribute, string|int $newValue): static
     {
 
-        $namedPlaceholder = ':' . str_replace('.', '',$attribute) . 'Set';
+        $namedPlaceholder = ':' . str_replace('.', '', $attribute) . 'Set';
         $this->set[$attribute] = $namedPlaceholder;
 
         $this->queryParams[$namedPlaceholder] = $newValue;
@@ -166,34 +136,6 @@ class QueryBuilder
         return $named;
     }
 
-    protected function makePlaceholders(array $params): array
-    {
-        $placeholders = $params;
-
-        array_walk_recursive($placeholders, function (&$item, $key) {
-            $item = '?';
-        });
-
-        return $placeholders;
-    }
-
-
-    /**
-     * Делает из массива с неограниченной вложенностью -> одномерный массив
-     *
-     * @param array $params
-     * @return array
-     */
-    protected function extractParams(array $params): array
-    {
-        $result = [];
-        array_walk_recursive($params, function ($item, $key) use (&$result) {
-            $result[] = $item;
-        });
-
-        return $result;
-    }
-
     /**
      * @param array $values [[1,2,3],...]
      * @return string (1,2,3),..
@@ -205,32 +147,8 @@ class QueryBuilder
             $result[] = '(' . implode(', ', $value) . ')';
         }
 
-
         return implode(', ', $result);
     }
-
-    /**
-     * подготавливает set для вставки в update
-     * @param array $data
-     * @return string
-     */
-    protected function prepareSet(array $data): string
-    {
-        $setArr = [];
-        foreach ($data as $key => $value) {
-            $setArr[] = ' ' . $key . '=' . $value;
-        }
-
-        return implode(', ', $setArr);
-    }
-
-
-    public function insertFromRow(string $insertRow, array $params = []): bool
-    {
-        $this->query['insert'] = $insertRow;
-        return $this->prepareAndExecute($params);
-    }
-
 
     public function from(string $table): static
     {
@@ -251,7 +169,6 @@ class QueryBuilder
             . ' ' . $condition . ' '
             . $secondaryTable . '.' . $secondaryTableField . ' ';
 
-
         return $this;
     }
 
@@ -262,15 +179,13 @@ class QueryBuilder
         return $this;
     }
 
-
     public function where(
         string     $attribute,
         string     $condition,
         string|int $value
     ): static
     {
-
-        $namedPlaceholder = ':' .  str_replace('.', '',$attribute) . 'Where';
+        $namedPlaceholder = ':' . str_replace('.', '', $attribute) . 'Where';
         $this->queryParams[$namedPlaceholder] = $value;
 
         if ($this->where) {
@@ -281,21 +196,11 @@ class QueryBuilder
         return $this;
     }
 
-    protected function assocToList($array): array
-    {
-        $temp = [];
-        foreach ($array as $item) {
-            $temp[] = $item;
-        }
-        return $temp;
-    }
-
     public function whereBrackets(callable $callback, string|int $param, string $condition = 'and'): static
     {
         if ($this->where) {
             $this->where[] = ['&&||' => $condition];
         }
-
 
         $queryBuilder = new QueryBuilder();
         $callback($queryBuilder, $param);
@@ -315,7 +220,7 @@ class QueryBuilder
     ): static
     {
         $this->where[] = ['&&||' => 'or'];
-        $namedPlaceholder = ':' .  str_replace('.', '',$attribute) . 'WhereOr';
+        $namedPlaceholder = ':' . str_replace('.', '', $attribute) . 'WhereOr';
         $this->queryParams[$namedPlaceholder] = $value;
 
         $this->where[$attribute] = ['cond' => $condition, 'val' => $namedPlaceholder];
@@ -323,16 +228,8 @@ class QueryBuilder
         return $this;
     }
 
-    public function whereFromRow(string $whereRow): static
-    {
-        $this->query['where'] = $whereRow;
-
-        return $this;
-    }
-
     public function groupBy(string ...$fields): static
     {
-
         $this->query['groupBy'] = ' group by ';
 
         $count = 0;
@@ -340,22 +237,6 @@ class QueryBuilder
             $count++;
             $this->query['groupBy'] .= $count > 1 ? ' , ' . $field : $field . ' ';
         }
-
-
-        return $this;
-    }
-
-    public function having(string $attribute, string $condition, string $value): static
-    {
-        $this->query['having'] = ' having ' . $attribute . ' ' . $condition . ' ' . $value . ' ';
-
-
-        return $this;
-    }
-
-    public function havingFromRow(string $havingRow): static
-    {
-        $this->query['having'] = ' having ' . $havingRow;
 
         return $this;
     }
@@ -417,10 +298,22 @@ class QueryBuilder
         return $this;
     }
 
-
     public function getQuery(): string
     {
+        $this->prepareQuery();
 
+        return implode('', $this->query);
+    }
+
+    protected function prepareQuery(): void
+    {
+        $this->prepareSet();
+        $this->prepareWhere($this->where);
+        $this->prepareSelect();
+    }
+
+    protected function prepareSet(): void
+    {
         $setArr = [];
 
         foreach ($this->set as $attr => $newValue) {
@@ -430,10 +323,18 @@ class QueryBuilder
         if ($setArr) {
             $this->query['set'] = ' set ' . implode(' , ', $setArr) . ' ';
         }
+    }
 
-        //TODO из этого бы сделать рекурсивную функцию
-        $makeStr = [];
-        foreach ($this->where as $attr => $elem) {
+    protected function prepareSelect(): void
+    {
+        if ($this->query['from'] && !$this->query['select']) {
+            $this->query['select'] = ' select * ';
+        }
+    }
+
+    protected function prepareWhere($attrCondVal, &$makeStr = []): void
+    {
+        foreach ($attrCondVal as $attr => $elem) {
 
             if (isset($elem['&&||'])) {
                 $makeStr[] = $elem['&&||'];
@@ -442,15 +343,7 @@ class QueryBuilder
 
             if (isset($elem['()'])) {
                 $makeStr[] = '(';
-                foreach ($elem['()'] as $attrIn => $condAndValIn) {
-                    if (isset($condAndValIn['&&||'])) {
-                        $makeStr[] = $condAndValIn['&&||'];
-                        continue;
-                    }
-                    $cond = $condAndValIn['cond'];
-                    $val = $condAndValIn['val'];
-                    $makeStr[] = $attrIn . ' ' . $cond . ' ' . $val;
-                }
+                $this->prepareWhere($elem['()'], $makeStr);
                 $makeStr[] = ')';
                 continue;
             }
@@ -458,19 +351,11 @@ class QueryBuilder
             $cond = $elem['cond'];
             $val = $elem['val'];
             $makeStr[] = $attr . ' ' . $cond . ' ' . $val;
-
         }
-
 
         if ($makeStr) {
             $this->query['where'] = ' where ' . implode(' ', $makeStr) . ' ';
         }
-
-        if ($this->query['from'] && !$this->query['select']) {
-            $this->query['select'] = ' select * ';
-        }
-
-        return implode('', $this->query);
     }
 
     /**
