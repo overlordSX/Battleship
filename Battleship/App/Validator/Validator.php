@@ -2,6 +2,8 @@
 
 namespace Battleship\App\Validator;
 
+use Battleship\App\Validator\Rule\IfWasErrorsStop;
+
 class Validator
 {
     protected array $fieldsWithErrors = [];
@@ -18,6 +20,14 @@ class Validator
          */
         foreach ($fieldsRules as $field => $rules) {
             foreach ($rules as $rule) {
+                if (is_a($rule, IfWasErrorsStop::class)) {
+                    if ($this->fieldsWithErrors) {
+                        break 2;
+                    } else {
+                        continue;
+                    }
+                }
+
                 if (!$rule->pass($fieldsData[$field] ?? null)) {
 
                     $this->fieldsWithErrors[$field] = $rule->message();
