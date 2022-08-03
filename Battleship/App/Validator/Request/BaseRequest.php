@@ -10,6 +10,9 @@ use Battleship\App\Validator\Rule\IsPosInt;
 use Battleship\App\Validator\Rule\IsString;
 use JetBrains\PhpStorm\ArrayShape;
 
+/**
+ * Проверит существование игры, игрока, и того что данный игрок участвует в этой игре
+ */
 class BaseRequest extends AbstractRequest
 {
     #[ArrayShape([

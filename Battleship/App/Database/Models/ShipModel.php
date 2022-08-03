@@ -12,10 +12,8 @@ use Battleship\App\Database\Entity\ShipEntity;
  */
 class ShipModel extends AbstractModel
 {
-
     protected string $tableName = 'ship';
     protected string $entityClassName = ShipEntity::class;
-
 
     /**
      * @param $name

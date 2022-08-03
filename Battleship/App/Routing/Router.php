@@ -10,10 +10,8 @@ use Exception;
  */
 class Router
 {
-    //хранит маршруты, маршруту соотвествует функция
     private static array $routes = [];
 
-    //запрет на создание и клонирование
     private function __construct()
     {
     }

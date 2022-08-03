@@ -38,9 +38,7 @@ class MessageModel extends AbstractModel
         ]);
     }
 
-    /**
-     * @throws \Exception
-     */
+    /** @throws \Exception */
     public function getChatMessages($gameId, $playerCode): array
     {
         $playerModel = new PlayerModel();

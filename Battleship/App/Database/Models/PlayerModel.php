@@ -15,7 +15,6 @@ class PlayerModel extends AbstractModel
     protected string $tableName = 'player';
     protected string $entityClassName = PlayerEntity::class;
 
-
     /**
      * @return PlayerEntity
      * @throws \Exception
@@ -77,7 +76,6 @@ class PlayerModel extends AbstractModel
             ? $currentGame->isFirstReady() : $currentGame->isSecondReady();
     }
 
-
     /**
      * @param GameEntity $currentGame
      * @param PlayerEntity $currentPlayer
@@ -106,10 +104,5 @@ class PlayerModel extends AbstractModel
     protected function getNewPlayerCode(): string
     {
         return uniqid();
-    }
-
-    protected function getNewPlayerCodeMd5(): string
-    {
-        return md5(microtime(true));
     }
 }

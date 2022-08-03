@@ -10,9 +10,7 @@ use Exception;
 
 class DatabaseController implements ControllerInterface
 {
-    /**
-     * @throws Exception
-     */
+    /** @throws Exception  */
     public function createTables(): void
     {
         $queryBuilder = new QueryBuilder();
@@ -123,7 +121,6 @@ class DatabaseController implements ControllerInterface
             foreign key (game_field_id) references game_field(id)
         ) engine = InnoDB;')->prepareAndExecute());
 
-
         $shipModel = new ShipModel();
 
         $shipName =
@@ -144,7 +141,6 @@ class DatabaseController implements ControllerInterface
             $shipModel
                 ->insert(['name' => $name, 'size' => substr($name, 0, 1)]);
         }*/
-
 
         header('Content-Type: application/json');
 
@@ -167,15 +163,11 @@ class DatabaseController implements ControllerInterface
 
         $player = new PlayerModel();
 
-
-        //TODO по сути проверка на существование игрока, если 1 => есть
-        //var_dump($player->query()->where('id', '=',6)->selectCountRows()->fetchCount());
-
         /*var_dump($player->query()->where('id', '=', 7)->select()->fetch());
         var_dump($player->update('code', '=', 'ГИГАНТ', 'БОЛЬШОЙ'));
         var_dump($player->query()->where('id', '=', 7)->select()->fetch());*/
 
-        //TODO DELETE ALL TABLES
+        //DELETE ALL TABLES
         //var_dump($queryBuilder->clear()->selectRow('drop table if exists shot, ship_placement, game_field, ship, message, game, player, game_status')->prepareAndExecute());
 
     }

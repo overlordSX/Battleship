@@ -12,6 +12,7 @@ class IsCorrectGameStatus implements RuleInterface
     {
     }
 
+    /** @throws \Exception */
     public function pass($value): bool
     {
         $gameId = $value['gameId'];
@@ -32,6 +33,6 @@ class IsCorrectGameStatus implements RuleInterface
     {
         $gameStatusModel = new GameStatusModel();
         $status = $gameStatusModel->getStatus($this->gameStatus);
-        return 'Этап: ' . $status->getDescription() . ': - уже прошел';
+        return 'Этап: ' . $status->getDescription() . '  - уже прошел';
     }
 }

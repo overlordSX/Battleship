@@ -26,12 +26,13 @@ class GameModel extends AbstractModel
     public const BATTLE_GAME_STATUS = 2;
     public const END_GAME_STATUS = 3;
 
-    protected GameEntity $currentGame;
-
-    /**
-     * @throws Exception
-     */
-    #[ArrayShape(['id' => "int|null", 'code' => "string", 'invite' => "string", 'success' => "bool"])]
+    /** @throws Exception */
+    #[ArrayShape([
+        'id' => "int|null",
+        'code' => "string",
+        'invite' => "string",
+        'success' => "bool"
+    ])]
     public function start(): array
     {
         $playerModel = new PlayerModel();
@@ -113,9 +114,7 @@ class GameModel extends AbstractModel
         );
     }
 
-    /**
-     * @throws Exception
-     */
+    /** @throws Exception */
     public function playersReady($gameId, $playerCode): array
     {
         $ready = [];
@@ -147,9 +146,7 @@ class GameModel extends AbstractModel
         return $ready;
     }
 
-    /**
-     * @throws Exception
-     */
+    /**  @throws Exception */
     public function setGameStatus($gameId, $gameStatus): bool
     {
         return $this->update(
@@ -201,19 +198,6 @@ class GameModel extends AbstractModel
             ->query()
             ->where('id', '=', $gameId)
             ->fetch();
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function setCurrent($gameId): void
-    {
-        $this->currentGame = $this->getGameById($gameId);
-    }
-
-    public function getCurrent(): GameEntity
-    {
-        return $this->currentGame;
     }
 
     protected function getRandomTurn(): bool

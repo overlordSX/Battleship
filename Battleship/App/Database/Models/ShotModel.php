@@ -36,9 +36,7 @@ class ShotModel extends AbstractModel
         return $shotField;
     }
 
-    /**
-     * @throws \Exception
-     */
+    /** @throws \Exception */
     public function makeShot($gameId, $playerCode): array
     {
         $success = [];
@@ -53,7 +51,6 @@ class ShotModel extends AbstractModel
 
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
-
 
         $enemyPlayer = $playerModel->getEnemyPlayer($currentGame, $currentPlayer);
 
@@ -116,7 +113,6 @@ class ShotModel extends AbstractModel
         }
 
         return $success;
-
     }
 
     protected function shotPartsCount(ShipPlacementEntity $shipOnField, $enemyField): int
@@ -155,7 +151,7 @@ class ShotModel extends AbstractModel
     }
 
     /**
-     * заполнит все выстрелами вокруг указанного типа корабля
+     * Заполнит все выстрелами вокруг указанного типа корабля
      * @param $field
      * @param ShipPlacementEntity $ship
      * @param $gameFieldId

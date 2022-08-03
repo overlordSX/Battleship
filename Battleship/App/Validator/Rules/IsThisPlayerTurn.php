@@ -9,6 +9,7 @@ use Battleship\App\Validator\RuleInterface;
 class IsThisPlayerTurn implements RuleInterface
 {
 
+    /** @throws \Exception */
     public function pass($value): bool
     {
         $gameId = $value['gameId'];

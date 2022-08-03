@@ -10,6 +10,7 @@ use Battleship\App\Validator\RuleInterface;
 
 class IsShotNotExist implements RuleInterface
 {
+    /** @throws \Exception */
     public function pass($value): bool
     {
         $gameId = $value['gameId'];
@@ -20,7 +21,7 @@ class IsShotNotExist implements RuleInterface
         $game = (new GameModel())->getGameById($gameId);
         $playerModel = new PlayerModel();
         $player = $playerModel->getPlayerByCode($playerCode);
-        $enemyPlayer = $playerModel->getEnemyPlayer($game,$player);
+        $enemyPlayer = $playerModel->getEnemyPlayer($game, $player);
 
         $gameField = (new GameFieldModel())->getByGameAndPlayer($gameId, $enemyPlayer->getId());
 

@@ -33,9 +33,6 @@ class EntityUtil
      */
     public static function resultToEntity($classname, $row): AbstractEntity
     {
-        //echo "from resultToEntity";
-        //var_dump($row);
-        //echo "from resultToEntity";
         return new $classname($row);
     }
 }

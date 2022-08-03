@@ -10,9 +10,7 @@ abstract class AbstractModel
     protected string $tableName;
     protected string $entityClassName;
 
-    /**
-     * @throws Exception
-     */
+    /** @throws Exception */
     public function getQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->entityClassName);
@@ -28,7 +26,7 @@ abstract class AbstractModel
     }
 
     /**
-     * ['column' => value]
+     * ['attr' => value]
      * @param array $params
      * @return bool успешно или нет
      * @throws Exception
@@ -39,8 +37,8 @@ abstract class AbstractModel
     }
 
     /**
-     * @param array $conditions [[attr => [cond => value]], ...]
-     * @param array $sets [[attr => newVal], ...]
+     * @param array $conditions [['attr' => ['cond' => value]], ...]
+     * @param array $sets [['attr' => newVal], ...]
      * @return bool успешно или нет
      * @throws Exception
      */
@@ -50,9 +48,14 @@ abstract class AbstractModel
     }
 
     /**
+     * ['attr' => ['cond' => value]
+     * @param string $attribute
+     * @param string $condition
+     * @param int|string $value
+     * @return bool
      * @throws Exception
      */
-    public function delete(string $attribute, string $condition, mixed $value): bool
+    public function delete(string $attribute, string $condition, int|string $value): bool
     {
         return $this->getQueryBuilder()->delete($this->tableName, $attribute, $condition, $value);
     }

@@ -10,9 +10,7 @@ use Battleship\App\Validator\Request\SendMessageRequest;
 class ChatController implements ControllerInterface
 {
 
-    /**
-     * @throws \Exception
-     */
+    /** @throws \Exception */
     public function loadChat(int $gameId, string $playerCode)
     {
         $loadChatRequest = new LoadChatRequest();
@@ -29,9 +27,7 @@ class ChatController implements ControllerInterface
         JsonUtil::makeAnswer($chatMessages);
     }
 
-    /**
-     * @throws \Exception
-     */
+    /**  @throws \Exception */
     public function sendMessage(int $gameId, string $playerCode): void
     {
         $sendMessageRequest = new SendMessageRequest();

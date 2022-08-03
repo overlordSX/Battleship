@@ -11,9 +11,7 @@ use Battleship\App\Validator\RuleInterface;
 class IsShipOnField implements RuleInterface
 {
 
-    /**
-     * @throws \Exception
-     */
+    /** @throws \Exception */
     public function pass($value): bool
     {
         $gameId = $value['gameId'];
