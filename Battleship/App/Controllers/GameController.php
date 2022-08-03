@@ -5,26 +5,13 @@ namespace Battleship\App\Controllers;
 
 use Battleship\App\Controllers\Util\JsonUtil;
 use Battleship\App\Database\Model\GameModel;
-use Battleship\App\Validator\Rule\IsGameExist;
-use Battleship\App\Validator\Rule\IsGameWithPlayerExist;
-use Battleship\App\Validator\Rule\IsPlayerExist;
-use Battleship\App\Validator\Rule\IsPosInt;
-use Battleship\App\Validator\Rule\IsString;
-use Battleship\App\Validator\Validator;
+use Battleship\App\Validator\Request\BaseRequest;
+use Battleship\App\Validator\Request\PlayerReadyRequest;
 use Exception;
 
 class GameController implements ControllerInterface
 {
-    /**
-     * сюда приходит POST, означающий старт игры
-     *
-     * нужно отдать обратно JSON:
-     *      id игры,
-     *      code игрока,
-     *      invite код доступа для другого игрока
-     *      success статус
-     * @throws Exception
-     */
+    /** @throws Exception */
     public function startNewGame(): void
     {
         $newGame = new GameModel();
@@ -33,38 +20,15 @@ class GameController implements ControllerInterface
         JsonUtil::makeAnswer($data);
     }
 
-    /**
-     * возвращает статус игры
-     *
-     * @param $gameId
-     * @param $playerCode
-     * @throws Exception
-     */
-    public function getStatus($gameId, $playerCode): void
+    /** @throws Exception */
+    public function getStatus(int $gameId, string $playerCode): void
     {
-        $statusValidator = new Validator();
-        $statusValidator->make(
-            [
-                'gameId' => (int)$gameId,
-                'playerCode' => (string)$playerCode,
-                'gameAndPlayer' => ['gameId' => $gameId, 'playerCode' => $playerCode]
-            ],
-            [
-                // gameId & gameAndPlayer: проверять существование не обязательно
-                // так как если их не указать роутинг не будет обрабатывать запрос
-                'gameId' => [new IsPosInt(), new IsGameExist()],
-                'playerCode' => [new IsString(), new IsPlayerExist()],
-                'gameAndPlayer' => [new IsGameWithPlayerExist()]
-            ]
-        );
+        $statusRequest = new BaseRequest();
+        $statusRequest->validate(['gameId' => $gameId, 'playerCode' => $playerCode]);
+        $requestValidationAnswer = $statusRequest->answer();
 
-        $errors = $statusValidator->isValid() ? [] : $statusValidator->getErrors();
-        if ($errors) {
-            $info['success'] = false;
-            $info['error'] = 1;
-            $info['message'] = implode("\n", array_values($errors));
-
-            JsonUtil::makeAnswer($info);
+        if ($requestValidationAnswer) {
+            JsonUtil::makeAnswer($statusRequest->answer());
         }
 
         $gameModel = new GameModel();
@@ -73,32 +37,20 @@ class GameController implements ControllerInterface
         JsonUtil::makeAnswer($info);
     }
 
-    /**
-     * @throws Exception
-     */
-    public function setReady($gameId, $playerCode): void
+    /** @throws Exception */
+    public function setReady(int $gameId, string $playerCode): void
     {
-        $statusValidator = new Validator();
-        $statusValidator->make(
-            [
-                'gameId' => (int)$gameId,
-                'playerCode' => (string)$playerCode,
-                'gameAndPlayer' => ['gameId' => $gameId, 'playerCode' => $playerCode]
-            ],
-            [
-                // gameId & gameAndPlayer: проверять существование не обязательно
-                // так как если их не указать роутинг не будет обрабатывать запрос
-                'gameId' => [new IsPosInt(), new IsGameExist()],
-                'playerCode' => [new IsString(), new IsPlayerExist()],
-                'gameAndPlayer' => [new IsGameWithPlayerExist()]
-            ]
-        );
+        $playerReadyRequest = new PlayerReadyRequest();
+        $playerReadyRequest->validate(['gameId' => $gameId, 'playerCode' => $playerCode]);
+        $requestAnswer = $playerReadyRequest->answer();
+
+        if ($requestAnswer) {
+            JsonUtil::makeAnswer($playerReadyRequest->answer());
+        }
 
         $gameModel = new GameModel();
         $ready = $gameModel->playersReady($gameId, $playerCode);
 
         JsonUtil::makeAnswer($ready);
     }
-
-
 }
