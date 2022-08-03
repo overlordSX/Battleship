@@ -4,12 +4,8 @@ namespace Battleship\App\Controllers;
 
 use Battleship\App\Controllers\Util\JsonUtil;
 use Battleship\App\Database\Model\MessageModel;
-use Battleship\App\Validator\Rule\IsGameExist;
-use Battleship\App\Validator\Rule\IsGameWithPlayerExist;
-use Battleship\App\Validator\Rule\IsPlayerExist;
-use Battleship\App\Validator\Rule\IsPosInt;
-use Battleship\App\Validator\Rule\IsString;
-use Battleship\App\Validator\Validator;
+use Battleship\App\Validator\Request\LoadChatRequest;
+use Battleship\App\Validator\Request\SendMessageRequest;
 
 class ChatController implements ControllerInterface
 {
@@ -17,23 +13,15 @@ class ChatController implements ControllerInterface
     /**
      * @throws \Exception
      */
-    public function loadChat($gameId, $playerCode)
+    public function loadChat(int $gameId, string $playerCode)
     {
-        $statusValidator = new Validator();
-        $statusValidator->make(
-            [
-                'gameId' => (int)$gameId,
-                'playerCode' => (string)$playerCode,
-                'gameAndPlayer' => ['gameId' => $gameId, 'playerCode' => $playerCode]
-            ],
-            [
-                // gameId & gameAndPlayer: проверять существование не обязательно
-                // так как если их не указать роутинг не будет обрабатывать запрос
-                'gameId' => [new IsPosInt(), new IsGameExist()],
-                'playerCode' => [new IsString(), new IsPlayerExist()],
-                'gameAndPlayer' => [new IsGameWithPlayerExist()]
-            ]
-        );
+        $loadChatRequest = new LoadChatRequest();
+        $loadChatRequest->validate(['gameId' => $gameId, 'playerCode' => $playerCode]);
+        $requestAnswer = $loadChatRequest->answer();
+
+        if ($requestAnswer) {
+            JsonUtil::makeAnswer($requestAnswer);
+        }
 
         $messageModel = new MessageModel();
         $chatMessages = $messageModel->getChatMessages($gameId, $playerCode);
@@ -44,9 +32,11 @@ class ChatController implements ControllerInterface
     /**
      * @throws \Exception
      */
-    public function sendMessage($gameId, $playerCode): void
+    public function sendMessage(int $gameId, string $playerCode): void
     {
-        //TODO проверить что в сообщение не больше 250 символов, проверить htmlspecialchars
+        $sendMessageRequest = new SendMessageRequest();
+        $sendMessageRequest->validate(['gameId' => $gameId, 'playerCode' => $playerCode]);
+
         $messageModel = new MessageModel();
         $success['success'] = $messageModel->postNewMessage($gameId, $playerCode);
 
