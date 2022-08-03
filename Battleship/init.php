@@ -1,9 +1,7 @@
 <?
-
 require_once 'Battleship/App/Autoloader.php';
 
 use Battleship\App\Autoloader;
-
 
 require_once 'Battleship/App/Database/config/config.php';
 Autoloader::register('Battleship/App/Database/Database');
@@ -36,7 +34,29 @@ Autoloader::register('Battleship/App/Validator/Rules/IsPlayerExist');
 Autoloader::register('Battleship/App/Validator/Rules/IsPosInt');
 Autoloader::register('Battleship/App/Validator/Rules/IsGameWithPlayerExist');
 Autoloader::register('Battleship/App/Validator/Rules/IsString');
+Autoloader::register('Battleship/App/Validator/Rules/IsCorrectLastTime');
+Autoloader::register('Battleship/App/Validator/Rules/IsMaxLenCorrect');
+Autoloader::register('Battleship/App/Validator/Rules/IsRequired');
+Autoloader::register('Battleship/App/Validator/Rules/IsCorrectGameStatus');
+Autoloader::register('Battleship/App/Validator/Rules/IsLessEdge');
+Autoloader::register('Battleship/App/Validator/Rules/IsPlayerNotReady');
+Autoloader::register('Battleship/App/Validator/Rules/IsShotNotExist');
+Autoloader::register('Battleship/App/Validator/Rules/IsThisPlayerTurn');
+Autoloader::register('Battleship/App/Validator/Rules/IsInt');
+Autoloader::register('Battleship/App/Validator/Rules/IsInScope');
+Autoloader::register('Battleship/App/Validator/Rules/IfWasErrorsStop');
+Autoloader::register('Battleship/App/Validator/Rules/IsCorrectShipName');
+Autoloader::register('Battleship/App/Validator/Rules/IsShipOnField');
+Autoloader::register('Battleship/App/Validator/Rules/IsShipExist');
 Autoloader::register('Battleship/App/Validator/Validator');
+
+Autoloader::register('Battleship/App/Validator/Request/AbstractRequest');
+Autoloader::register('Battleship/App/Validator/Request/BaseRequest');
+Autoloader::register('Battleship/App/Validator/Request/PlayerReadyRequest');
+Autoloader::register('Battleship/App/Validator/Request/LoadChatRequest');
+Autoloader::register('Battleship/App/Validator/Request/SendMessageRequest');
+Autoloader::register('Battleship/App/Validator/Request/MakeShotRequest');
+Autoloader::register('Battleship/App/Validator/Request/UnsetShipRequest');
 
 Autoloader::register('Battleship/App/Controllers/Util/JsonUtil');
 Autoloader::register('Battleship/App/Controllers/ControllerInterface');
