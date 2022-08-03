@@ -12,7 +12,7 @@ class IsRequired implements RuleInterface
 
     public function pass($value): bool
     {
-        return isset($value);
+        return isset($value) && (!empty($value) || $value === 0);
     }
 
     public function message(): string
