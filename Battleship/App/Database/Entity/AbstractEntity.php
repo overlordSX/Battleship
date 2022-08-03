@@ -5,6 +5,6 @@ namespace Battleship\App\Database\Entity;
 
 abstract class AbstractEntity
 {
-    protected ?int $id;
+    protected array $data;
     abstract public function getId();
 }
