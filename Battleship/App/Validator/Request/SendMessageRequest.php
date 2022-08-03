@@ -20,7 +20,8 @@ class SendMessageRequest extends BaseRequest
     {
         $preparedParams = parent::prepareParams($params);
         $preparedParams['message'] = isset($_POST['message'])
-            ? htmlspecialchars($_POST['message'], ENT_QUOTES) : null;
+            ? htmlspecialchars(trim((string)$_POST['message']))
+            : null;
         return $preparedParams;
     }
 
