@@ -4,8 +4,6 @@ namespace Battleship\App\Database\Entity;
 
 class ShipPlacementEntity extends AbstractEntity
 {
-    protected ?int $id;
-
     protected array $data;
 
     public function __construct(array $row)
@@ -14,9 +12,9 @@ class ShipPlacementEntity extends AbstractEntity
     }
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->data['id'];
     }

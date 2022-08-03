@@ -11,7 +11,6 @@ namespace Battleship\App\Database\Entity;
  */
 class MessageEntity extends AbstractEntity
 {
-    protected ?int $id;
     protected array $data;
 
     public function __construct($row)
@@ -20,9 +19,9 @@ class MessageEntity extends AbstractEntity
     }
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->data['id'];
     }

@@ -7,8 +7,6 @@ namespace Battleship\App\Database\Entity;
  */
 class GameStatusEntity extends AbstractEntity
 {
-    protected ?int $id;
-
     protected array $data;
 
     public function __construct($row)
@@ -17,9 +15,9 @@ class GameStatusEntity extends AbstractEntity
     }
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->data['id'];
     }

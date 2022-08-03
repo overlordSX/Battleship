@@ -10,55 +10,17 @@ use Battleship\App\Database\Model\PlayerModel;
  */
 class GameEntity extends AbstractEntity
 {
-    protected ?int $id;
-
     protected array $data;
-
-    protected PlayerEntity $firstPlayer;
-    protected PlayerEntity $secondPlayer;
-
-
 
     public function __construct(array $row)
     {
-        //TODO откуда и что выкидывать по поводу того что кто либо хочет получить не существующую игру
-        // если будет несуществующий id, то придет false из pdo
-
         $this->data = $row;
-
     }
 
     /**
-     * @return PlayerEntity
-     * @throws \Exception
+     * @return int
      */
-    public function getFirstPlayer(): PlayerEntity
-    {
-        if (!isset($this->firstPlayer)) {
-            $this->firstPlayer = (new PlayerModel())->getPlayerById($this->data['first_player_id']);
-        }
-
-        return $this->firstPlayer;
-    }
-
-    /**
-     * @return PlayerEntity
-     * @throws \Exception
-     */
-    public function getSecondPlayer(): PlayerEntity
-    {
-        if (!isset($this->secondPlayer)) {
-            $this->secondPlayer = (new PlayerModel())->getPlayerById($this->data['first_player_id']);
-        }
-
-        return $this->secondPlayer;
-    }
-
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->data['id'];
     }
