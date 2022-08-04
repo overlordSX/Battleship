@@ -121,7 +121,7 @@ class DatabaseController implements ControllerInterface
             foreign key (game_field_id) references game_field(id)
         ) engine = InnoDB;')->prepareAndExecute());
 
-        $shipModel = new ShipModel();
+        $shipModel = ShipModel::getInstance();
 
         $shipName =
             [
