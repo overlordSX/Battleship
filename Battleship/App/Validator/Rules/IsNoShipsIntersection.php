@@ -11,8 +11,7 @@ class IsNoShipsIntersection implements RuleInterface
     /** @throws \Exception */
     public function pass($value): bool
     {
-        $ship = $value['ship'];
-        $field = $value['field'];
+        extract($value);
 
         $isHorizontal = ($ship['orientation'] === 'horizontal');
         $shipSize = substr($ship['ship'], 0, 1);
@@ -58,6 +57,6 @@ class IsNoShipsIntersection implements RuleInterface
 
     public function message(): string
     {
-        return "Вы не можете поставить сюда корабль.\nВокруг корабля должна быть свободна одна клетка.";
+        return "Пересечение с другим кораблем.\nВокруг корабля должна быть свободна одна клетка.";
     }
 }
