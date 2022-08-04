@@ -19,12 +19,52 @@ use JetBrains\PhpStorm\ArrayShape;
  */
 class GameModel extends AbstractModel
 {
+    protected static ?GameModel $_instance = null;
+
     protected string $tableName = 'game';
     protected string $entityClassName = GameEntity::class;
 
     public const PLACE_SHIP_GAME_STATUS = 1;
     public const BATTLE_GAME_STATUS = 2;
     public const END_GAME_STATUS = 3;
+
+    protected GameEntity $game;
+
+    /** @throws \Exception */
+    protected function __construct(
+
+    ) {
+    }
+
+    /**
+     * @throws Exception
+     */
+    public static function getInstance(): GameModel
+    {
+        if (static::$_instance === null) {
+            static::$_instance = new static();
+        }
+
+        return self::$_instance;
+    }
+
+    /**
+     * @param $gameId
+     * @return void
+     * @throws Exception
+     */
+    public function setGame($gameId): void
+    {
+        $this->game = $this->getGameById($gameId);
+    }
+
+    /**
+     * @return GameEntity
+     */
+    public function getGame(): GameEntity
+    {
+        return $this->game;
+    }
 
     /** @throws Exception */
     #[ArrayShape([
@@ -66,9 +106,9 @@ class GameModel extends AbstractModel
         'usedPlaces' => "array",
         'success' => "bool"
     ])]
-    public function getInfo($gameId, $playerCode): array
+    public function getInfo($playerCode): array
     {
-        $currentGame = $this->getGameById($gameId);
+        $currentGame = $this->game;
 
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
@@ -78,8 +118,8 @@ class GameModel extends AbstractModel
         $isCurrentReady = $playerModel->isCurrentReady($currentGame, $currentPlayer);
 
         $gameFieldModel = new GameFieldModel();
-        $myGameField = $gameFieldModel->getByGameAndPlayer($gameId, $currentPlayer->getId());
-        $enemyGameField = $gameFieldModel->getByGameAndPlayer($gameId, $enemyPlayer->getId());
+        $myGameField = $gameFieldModel->getByGameAndPlayer($currentGame->getId(), $currentPlayer->getId());
+        $enemyGameField = $gameFieldModel->getByGameAndPlayer($currentGame->getId(), $enemyPlayer->getId());
 
         $myFieldAndUsedPlaces = new ShipPlacementModel();
         $myFieldAndUsedPlaces->fillFieldAndUsedPlaces($myGameField->getId());
@@ -115,11 +155,11 @@ class GameModel extends AbstractModel
     }
 
     /** @throws Exception */
-    public function playersReady($gameId, $playerCode): array
+    public function playersReady($playerCode): array
     {
         $ready = [];
 
-        $currentGame = $this->getGameById($gameId);
+        $currentGame = $this->game;
 
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
@@ -127,20 +167,20 @@ class GameModel extends AbstractModel
         $isFirstPlayerIsCurrent = $currentGame->getFirstPlayerId() === $currentPlayer->getId();
         if ($isFirstPlayerIsCurrent) {
             $ready['success'] = $this->update(
-                [['id' => ['=' => $gameId]]],
+                [['id' => ['=' => $currentGame->getId()]]],
                 [['first_ready' => true]]
             );
             $ready['enemyReady'] = $currentGame->isSecondReady();
         } else {
             $ready['success'] = $this->update(
-                [['id' => ['=' => $gameId]]],
+                [['id' => ['=' => $currentGame->getId()]]],
                 [['second_ready' => true]]
             );
             $ready['enemyReady'] = $currentGame->isFirstReady();
         }
 
         if ($ready['enemyReady']) {
-            $this->setGameStatus($gameId, self::BATTLE_GAME_STATUS);
+            $this->setGameStatus($currentGame->getId(), self::BATTLE_GAME_STATUS);
         }
 
         return $ready;
