@@ -32,12 +32,12 @@ class PrepareFieldScope
         $endX = $shipX + $width;
         $endY = $shipY + $height;
 
-        if ($endX > ShipPlacementModel::FIELD_SIZE) {
-            $endX = ShipPlacementModel::FIELD_SIZE;
+        if ($endX > ShipPlacementModel::FIELD_EDGE_COORDINATE) {
+            $endX = ShipPlacementModel::FIELD_EDGE_COORDINATE;
         }
 
-        if ($endY > ShipPlacementModel::FIELD_SIZE) {
-            $endY = ShipPlacementModel::FIELD_SIZE;
+        if ($endY > ShipPlacementModel::FIELD_EDGE_COORDINATE) {
+            $endY = ShipPlacementModel::FIELD_EDGE_COORDINATE;
         }
 
         return [
