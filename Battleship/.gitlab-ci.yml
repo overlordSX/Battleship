@@ -1,0 +1,7 @@
+stages:
+    - deploy
+
+deploy:
+    stage: deploy
+    script:
+        - ~/v3/deploy.sh $CI_PROJECT_NAMESPACE $CI_PROJECT_NAME $CI_COMMIT_REF_NAME $GITLAB_USER_EMAIL
