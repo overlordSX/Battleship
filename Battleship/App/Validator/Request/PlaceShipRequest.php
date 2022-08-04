@@ -11,6 +11,7 @@ use JetBrains\PhpStorm\ArrayShape;
 class PlaceShipRequest extends AbstractRequest
 {
 
+    /** @throws \Exception */
     #[ArrayShape([
         'gameId' => "int",
         'playerCode' => "string",
@@ -24,12 +25,6 @@ class PlaceShipRequest extends AbstractRequest
         if ($requestAnswer) {
             JsonUtil::makeAnswer($requestAnswer);
         }
-
-        $gameId = $params['gameId'];
-        $playerCode = $params['playerCode'];
-        $preparedParams = [
-            'gameAndPlayer' => ['gameId' => $gameId, 'playerCode' => $playerCode]
-        ];
 
         $shipsQue = $this->prepareShipsQue();
 
@@ -49,15 +44,19 @@ class PlaceShipRequest extends AbstractRequest
             JsonUtil::makeAnswer(['success' => false, 'message' => 'Передано недостаточно параметров']);
         }
 
+        $gameId = $params['gameId'];
+        $playerCode = $params['playerCode'];
+        $placeOneShipRequest = new PlaceOneShipRequest($gameId, $playerCode);
+
         foreach ($shipsQue as $ship) {
-            $forValidation = array_merge($preparedParams, ['oneShip' => $ship]);
-            $placeOneShipRequest = new PlaceOneShipRequest();
-            $placeOneShipRequest->validate($forValidation);
+            $placeOneShipRequest->validate(['oneShip' => $ship]);
             $requestAnswer = $placeOneShipRequest->answer();
 
             if ($requestAnswer) {
                 JsonUtil::makeAnswer($requestAnswer);
             }
+
+            $placeOneShipRequest->setShipToField($ship);
         }
 
         return [];
