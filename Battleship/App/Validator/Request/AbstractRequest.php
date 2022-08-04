@@ -8,12 +8,16 @@ abstract class AbstractRequest
 {
     protected Validator $validator;
 
+    public function __construct()
+    {
+        $this->validator = new Validator();
+    }
+
     abstract protected function prepareParams(array $params): array;
     abstract protected function rules(): array;
 
     public function validate($params): void
     {
-        $this->validator = new Validator();
         $this->validator->make($this->prepareParams($params), $this->rules());
     }
 
