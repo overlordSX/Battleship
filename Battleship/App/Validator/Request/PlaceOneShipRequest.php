@@ -6,6 +6,7 @@ use Battleship\App\Database\Model\GameFieldModel;
 use Battleship\App\Database\Model\GameModel;
 use Battleship\App\Database\Model\PlayerModel;
 use Battleship\App\Database\Model\ShipPlacementModel;
+use Battleship\App\Database\Model\ShotModel;
 use Battleship\App\Validator\Rule\IfWasErrorsStop;
 use Battleship\App\Validator\Rule\IsCorrectOrientation;
 use Battleship\App\Validator\Rule\IsNoShipsIntersection;
@@ -13,7 +14,7 @@ use Battleship\App\Validator\Rule\IsInScope;
 use Battleship\App\Validator\Rule\IsInt;
 use Battleship\App\Validator\Rule\IsRequired;
 use Battleship\App\Validator\Rule\IsShipExist;
-use Battleship\App\Validator\Rule\IsString;
+use Battleship\App\Validator\Rule\IsStringRequired;
 use JetBrains\PhpStorm\ArrayShape;
 
 
@@ -28,6 +29,7 @@ class PlaceOneShipRequest extends AbstractRequest
     /** @throws \Exception */
     public function __construct(int $gameId, string $playerCode)
     {
+        parent::__construct();
         $this->gameId = $gameId;
         $this->playerCode = $playerCode;
 
@@ -43,21 +45,15 @@ class PlaceOneShipRequest extends AbstractRequest
         $this->field = $shipPlacementModel->getField();
     }
 
-    public function setShipToField(array $ship): void
+    public function setShipToField(int $shipX, int $shipY, bool $isHorizontal, int $shipSize, string $shipName): void
     {
-        $isHorizontal = ($ship['orientation'] === 'horizontal');
-        $shipSize = substr($ship['ship'], 0, 1);
-        $shipX = (int)$ship['x'];
-        $shipY = (int)$ship['y'];
-        $shipName = (string)$ship['ship'];
-
         if ($isHorizontal) {
             for ($i = 0; $i < $shipSize; $i++) {
-                $this->field[$shipX + $i][$shipY] = [$shipName, 0];
+                $this->field[$shipX + $i][$shipY] = [$shipName, ShotModel::WAS_NO_SHOT];
             }
         } else {
             for ($i = 0; $i < $shipSize; $i++) {
-                $this->field[$shipX][$shipY + $i] = [$shipName, 0];
+                $this->field[$shipX][$shipY + $i] = [$shipName, ShotModel::WAS_NO_SHOT];
             }
         }
     }
@@ -74,19 +70,28 @@ class PlaceOneShipRequest extends AbstractRequest
     ])]
     protected function prepareParams(array $params): array
     {
-        $ship = $params['oneShip'];
+        $shipName = $params['shipName'];
+        $shipSize = $params['shipSize'];
+        $orientation = $params['orientation'];
+        $isHorizontal = $params['isHorizontal'];
+        $shipX = $params['shipX'];
+        $shipY = $params['shipY'];
 
-        $isHorizontal = (string)$ship['orientation'] === 'horizontal';
-        $this->xSizeBound = ShipPlacementModel::FIELD_SIZE + 1
-            - ($isHorizontal ? (int)substr($ship['ship'], 0, 1) : 0);
-        $this->ySizeBound = ShipPlacementModel::FIELD_SIZE + 1
-            - ($isHorizontal ? 0 : (int)substr($ship['ship'], 0, 1));
+        $this->xSizeBound = ShipPlacementModel::FIELD_SIZE - ($isHorizontal ? $shipSize : 0);
+        $this->ySizeBound = ShipPlacementModel::FIELD_SIZE - ($isHorizontal ? 0 : $shipSize);
 
-        $preparedParams['x'] = (int)$ship['x'];
-        $preparedParams['y'] = (int)$ship['y'];
-        $preparedParams['shipName'] = (string)$ship['ship'];
-        $preparedParams['orientation'] = (string)$ship['orientation'];
-        $preparedParams['fieldAndShip'] = ['field' => $this->field , 'ship' => $ship];
+        $preparedParams['x'] = $shipX;
+        $preparedParams['y'] = $shipY;
+        $preparedParams['shipName'] = $shipName;
+        $preparedParams['orientation'] = $orientation;
+        $preparedParams['fieldAndShip'] = [
+            'field' => $this->field,
+            'isHorizontal' => $isHorizontal,
+            'shipSize' => $shipSize,
+            'shipName' => $shipName,
+            'shipX' => $shipX,
+            'shipY' => $shipY
+        ];
 
         return $preparedParams;
     }
@@ -116,12 +121,14 @@ class PlaceOneShipRequest extends AbstractRequest
             'shipName' => [
                 new IfWasErrorsStop(),
                 new IsRequired('Название корабля'),
-                new IsString(), new IsShipExist()
+                new IsStringRequired(),
+                new IsShipExist()
             ],
             'orientation' => [
                 new IfWasErrorsStop(),
                 new IsRequired('Ориентация корабля'),
-                new IsString(), new IsCorrectOrientation()
+                new IsStringRequired(),
+                new IsCorrectOrientation()
             ],
             'fieldAndShip' => [
                 new IfWasErrorsStop(),
