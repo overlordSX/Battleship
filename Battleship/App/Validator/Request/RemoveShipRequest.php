@@ -17,7 +17,7 @@ class RemoveShipRequest extends AbstractRequest
     ])]
     protected function prepareParams(array $params): array
     {
-        $shipName = substr($_POST['ship'] ?? null, 0, 3);
+        $shipName = $_POST['ship'] ?? null;
 
         $preparedParams['shipName'] = $shipName;
         $preparedParams['gameIdAndPlayerCodeAndShip'] = array_merge(
