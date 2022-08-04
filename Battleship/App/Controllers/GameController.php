@@ -14,7 +14,7 @@ class GameController implements ControllerInterface
     /** @throws Exception */
     public function startNewGame(): void
     {
-        $newGame = new GameModel();
+        $newGame = GameModel::getInstance();
         $data = $newGame->start();
 
         JsonUtil::makeAnswer($data);
@@ -31,8 +31,9 @@ class GameController implements ControllerInterface
             JsonUtil::makeAnswer($statusRequest->answer());
         }
 
-        $gameModel = new GameModel();
-        $info = $gameModel->getInfo($gameId, $playerCode);
+        $gameModel = GameModel::getInstance();
+        $gameModel->setGame($gameId);
+        $info = $gameModel->getInfo($playerCode);
 
         JsonUtil::makeAnswer($info);
     }
@@ -48,8 +49,9 @@ class GameController implements ControllerInterface
             JsonUtil::makeAnswer($playerReadyRequest->answer());
         }
 
-        $gameModel = new GameModel();
-        $ready = $gameModel->playersReady($gameId, $playerCode);
+        $gameModel = GameModel::getInstance();
+        $gameModel->setGame($gameId);
+        $ready = $gameModel->playersReady($playerCode);
 
         JsonUtil::makeAnswer($ready);
     }
