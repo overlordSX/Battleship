@@ -15,15 +15,11 @@ class IsThisPlayerTurn implements RuleInterface
         $gameId = $value['gameId'];
         $playerCode = $value['playerCode'];
 
-
         $playerModel = new PlayerModel();
         $game = (new GameModel())->getGameById($gameId);
         $player = $playerModel->getPlayerByCode($playerCode);
 
-        if (!$playerModel->isMyTurn($game, $player)) {
-            return false;
-        }
-        return true;
+        return $playerModel->isMyTurn($game, $player);
     }
 
     public function message(): string
