@@ -4,16 +4,16 @@ namespace Battleship\App\Validator\Rule;
 
 use Battleship\App\Validator\RuleInterface;
 
-class IsString implements RuleInterface
+class IsStringRequired implements RuleInterface
 {
 
     public function pass($value): bool
     {
-        return is_string($value);
+        return is_string($value) && (string)$value != '';
     }
 
     public function message(): string
     {
-        return 'Это не строка';
+        return 'Вы отправили пустую строку';
     }
 }
