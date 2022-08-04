@@ -3,6 +3,8 @@
 namespace Battleship\App\Validator\Request;
 
 use Battleship\App\Controllers\Util\JsonUtil;
+use Battleship\App\Helpers\PrepareShipSize;
+use Battleship\App\Helpers\ShipOrientationHelper;
 use JetBrains\PhpStorm\ArrayShape;
 
 /**
@@ -49,14 +51,28 @@ class PlaceShipRequest extends AbstractRequest
         $placeOneShipRequest = new PlaceOneShipRequest($gameId, $playerCode);
 
         foreach ($shipsQue as $ship) {
-            $placeOneShipRequest->validate(['oneShip' => $ship]);
+            $shipName = (string)$ship['ship'];
+            $shipSize = PrepareShipSize::prepare($shipName);
+            $orientation = (string)$ship['orientation'];
+            $isHorizontal = ShipOrientationHelper::isHorizontalFromString($orientation);
+            $shipX = (int)$ship['x'];
+            $shipY = (int)$ship['y'];
+
+            $placeOneShipRequest->validate([
+                'orientation' => $orientation,
+                'isHorizontal' => $isHorizontal,
+                'shipSize' => $shipSize,
+                'shipName' => $shipName,
+                'shipX' => $shipX,
+                'shipY' => $shipY
+            ]);
             $requestAnswer = $placeOneShipRequest->answer();
 
             if ($requestAnswer) {
                 JsonUtil::makeAnswer($requestAnswer);
             }
 
-            $placeOneShipRequest->setShipToField($ship);
+            $placeOneShipRequest->setShipToField($shipX, $shipY, $isHorizontal, $shipSize, $shipName);
         }
 
         return [];
@@ -107,7 +123,7 @@ class PlaceShipRequest extends AbstractRequest
             $shipsQue = [[
                 'x' => (int)$_POST['x'],
                 'y' => (int)$_POST['y'],
-                'ship' => substr($_POST['ship'], 0, 3),
+                'ship' => $_POST['ship'],
                 'orientation' => (string)$_POST['orientation']
             ]];
         }
