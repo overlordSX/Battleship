@@ -13,7 +13,7 @@ class IsShipExist implements RuleInterface
     {
         $shipName = $value;
 
-        return (new ShipModel())->isShipExist($shipName);
+        return ShipModel::getInstance()->isShipExist($shipName);
     }
 
     public function message(): string
