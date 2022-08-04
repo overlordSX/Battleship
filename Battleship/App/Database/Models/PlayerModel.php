@@ -5,6 +5,7 @@ namespace Battleship\App\Database\Model;
 use Battleship\App\Database\Entity\AbstractEntity;
 use Battleship\App\Database\Entity\GameEntity;
 use Battleship\App\Database\Entity\PlayerEntity;
+use Exception;
 
 /**
  * Аттрибуты:
@@ -17,7 +18,7 @@ class PlayerModel extends AbstractModel
 
     /**
      * @return PlayerEntity
-     * @throws \Exception
+     * @throws Exception
      */
     public function createPlayer(): AbstractEntity
     {
@@ -33,7 +34,7 @@ class PlayerModel extends AbstractModel
     /**
      * @param $playerCode
      * @return PlayerEntity
-     * @throws \Exception
+     * @throws Exception
      */
     public function getPlayerByCode($playerCode): AbstractEntity
     {
@@ -55,7 +56,7 @@ class PlayerModel extends AbstractModel
      * @param GameEntity $currentGame
      * @param PlayerEntity $currentPlayer
      * @return PlayerEntity enemyPlayer
-     * @throws \Exception
+     * @throws Exception
      */
     public function getEnemyPlayer(GameEntity $currentGame, PlayerEntity $currentPlayer): AbstractEntity
     {
@@ -90,7 +91,7 @@ class PlayerModel extends AbstractModel
     /**
      * @param $playerId
      * @return PlayerEntity
-     * @throws \Exception
+     * @throws Exception
      */
     public function getPlayerById($playerId): AbstractEntity
     {

@@ -6,11 +6,12 @@ use Battleship\App\Controllers\Util\JsonUtil;
 use Battleship\App\Database\Model\MessageModel;
 use Battleship\App\Validator\Request\LoadChatRequest;
 use Battleship\App\Validator\Request\SendMessageRequest;
+use Exception;
 
 class ChatController implements ControllerInterface
 {
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function loadChat(int $gameId, string $playerCode)
     {
         $loadChatRequest = new LoadChatRequest();
@@ -27,7 +28,7 @@ class ChatController implements ControllerInterface
         JsonUtil::makeAnswer($chatMessages);
     }
 
-    /**  @throws \Exception */
+    /**  @throws Exception */
     public function sendMessage(int $gameId, string $playerCode): void
     {
         $sendMessageRequest = new SendMessageRequest();

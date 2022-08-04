@@ -7,10 +7,11 @@ use Battleship\App\Database\Model\GameModel;
 use Battleship\App\Database\Model\PlayerModel;
 use Battleship\App\Database\Model\ShotModel;
 use Battleship\App\Validator\RuleInterface;
+use Exception;
 
 class IsShotNotExist implements RuleInterface
 {
-    /** @throws \Exception */
+    /** @throws Exception */
     public function pass($value): bool
     {
         $gameId = $value['gameId'];
@@ -18,7 +19,7 @@ class IsShotNotExist implements RuleInterface
         $x = $value['x'];
         $y = $value['y'];
 
-        $game = (new GameModel())->getGameById($gameId);
+        $game = (GameModel::getInstance($gameId))->getGame();
         $playerModel = new PlayerModel();
         $player = $playerModel->getPlayerByCode($playerCode);
         $enemyPlayer = $playerModel->getEnemyPlayer($game, $player);

@@ -8,16 +8,18 @@ use Battleship\App\Validator\RuleInterface;
 
 class IsPlayerNotReady implements RuleInterface
 {
+    /** @throws \Exception */
     public function pass($value): bool
     {
         $gameId = $value['gameId'];
         $playerCode = $value['playerCode'];
 
-        $gameModel = new GameModel();
+        $gameModel = GameModel::getInstance();
+        $gameModel->setGame($gameId);
         $playerModel = new PlayerModel();
 
         $player = $playerModel->getPlayerByCode($playerCode);
-        $game = $gameModel->getGameById($gameId);
+        $game = $gameModel->getGame();
 
         return !$playerModel->isCurrentReady($game, $player);
     }

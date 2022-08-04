@@ -5,6 +5,7 @@ namespace Battleship\App\Validator\Request;
 use Battleship\App\Controllers\Util\JsonUtil;
 use Battleship\App\Helpers\PrepareShipSize;
 use Battleship\App\Helpers\ShipOrientationHelper;
+use Exception;
 use JetBrains\PhpStorm\ArrayShape;
 
 /**
@@ -13,7 +14,7 @@ use JetBrains\PhpStorm\ArrayShape;
 class PlaceShipRequest extends AbstractRequest
 {
 
-    /** @throws \Exception */
+    /** @throws Exception */
     #[ArrayShape([
         'gameId' => "int",
         'playerCode' => "string",

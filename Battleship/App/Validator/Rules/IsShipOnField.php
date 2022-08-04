@@ -7,18 +7,19 @@ use Battleship\App\Database\Model\GameModel;
 use Battleship\App\Database\Model\PlayerModel;
 use Battleship\App\Database\Model\ShipPlacementModel;
 use Battleship\App\Validator\RuleInterface;
+use Exception;
 
 class IsShipOnField implements RuleInterface
 {
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function pass($value): bool
     {
         $gameId = $value['gameId'];
         $playerCode = $value['playerCode'];
         $shipName = $value['shipName'];
 
-        $game = (new GameModel())->getGameById($gameId);
+        $game = (GameModel::getInstance($gameId))->getGame();
 
         $playerModel = new PlayerModel();
         $player = $playerModel->getPlayerByCode($playerCode);

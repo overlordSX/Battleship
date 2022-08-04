@@ -15,6 +15,7 @@ use Battleship\App\Validator\Rule\IsInt;
 use Battleship\App\Validator\Rule\IsRequired;
 use Battleship\App\Validator\Rule\IsShipExist;
 use Battleship\App\Validator\Rule\IsStringRequired;
+use Exception;
 use JetBrains\PhpStorm\ArrayShape;
 
 
@@ -26,14 +27,16 @@ class PlaceOneShipRequest extends AbstractRequest
     protected string $playerCode;
     protected array $field;
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function __construct(int $gameId, string $playerCode)
     {
         parent::__construct();
         $this->gameId = $gameId;
         $this->playerCode = $playerCode;
 
-        $game = (new GameModel())->getGameById($gameId);
+        $gameModel = GameModel::getInstance();
+        $gameModel->setGame($gameId);
+        $game = $gameModel->getGame();
 
         $playerModel = new PlayerModel();
         $player = $playerModel->getPlayerByCode($playerCode);
@@ -59,7 +62,7 @@ class PlaceOneShipRequest extends AbstractRequest
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     #[ArrayShape([
         'x' => "array",

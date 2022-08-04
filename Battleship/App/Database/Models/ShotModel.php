@@ -5,6 +5,7 @@ namespace Battleship\App\Database\Model;
 use Battleship\App\Database\Entity\ShipPlacementEntity;
 use Battleship\App\Database\Entity\ShotEntity;
 use Battleship\App\Helpers\PrepareFieldScope;
+use Exception;
 
 class ShotModel extends AbstractModel
 {
@@ -17,7 +18,7 @@ class ShotModel extends AbstractModel
     /**
      * @param $gameFieldId
      * @return ShotEntity[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getShotsArray($gameFieldId): array
     {
@@ -39,7 +40,7 @@ class ShotModel extends AbstractModel
         return $shotField;
     }
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function makeShot($gameId, $playerCode): array
     {
         $success = [];
@@ -49,8 +50,9 @@ class ShotModel extends AbstractModel
         $coordinateY = isset($_POST['y'])
             ? (int)htmlspecialchars($_POST['y'], ENT_QUOTES) : null;
 
-        $gameModel = new GameModel();
-        $currentGame = $gameModel->getGameById($gameId);
+        $gameModel = GameModel::getInstance();
+        $gameModel->setGame($gameId);
+        $currentGame = $gameModel->getGame();
 
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
@@ -153,7 +155,7 @@ class ShotModel extends AbstractModel
      * @param ShipPlacementEntity $ship
      * @param $gameFieldId
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function fillShots($field, ShipPlacementEntity $ship, $gameFieldId): bool
     {
@@ -183,7 +185,7 @@ class ShotModel extends AbstractModel
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function realize(int $coordinateX, int $coordinateY, int $gameFieldId): bool
     {

@@ -4,7 +4,7 @@ namespace Battleship\App\Database\Model;
 
 use Battleship\App\Database\Entity\AbstractEntity;
 use Battleship\App\Database\Entity\GameFieldEntity;
-use Battleship\App\Database\Entity\PlayerEntity;
+use Exception;
 
 /**
  * Аттрибуты:
@@ -17,7 +17,7 @@ class GameFieldModel extends AbstractModel
     protected string $entityClassName = GameFieldEntity::class;
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function create($gameId, $playerId): bool
     {
@@ -31,7 +31,7 @@ class GameFieldModel extends AbstractModel
      * @param $gameId
      * @param $playerId
      * @return GameFieldEntity
-     * @throws \Exception
+     * @throws Exception
      */
     public function getByGameAndPlayer($gameId, $playerId): AbstractEntity
     {

@@ -8,11 +8,12 @@ use Battleship\App\Database\Model\GameModel;
 use Battleship\App\Database\Model\ShipPlacementModel;
 use Battleship\App\Validator\Request\BaseShipPlacementRequest;
 use Battleship\App\Validator\Request\PlaceShipRequest;
+use Exception;
 
 class PlacementController implements ControllerInterface
 {
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function placeShip(int $gameId, string $playerCode)
     {
@@ -26,7 +27,7 @@ class PlacementController implements ControllerInterface
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function clearField(int $gameId, string $playerCode)
     {

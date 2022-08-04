@@ -4,11 +4,12 @@ namespace Battleship\App\Validator\Rule;
 
 use Battleship\App\Database\Model\ShipModel;
 use Battleship\App\Validator\RuleInterface;
+use Exception;
 
 class IsShipExist implements RuleInterface
 {
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function pass($value): bool
     {
         $shipName = $value;

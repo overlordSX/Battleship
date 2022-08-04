@@ -4,6 +4,7 @@ namespace Battleship\App\Database\Model;
 
 use Battleship\App\Database\Entity\AbstractEntity;
 use Battleship\App\Database\Entity\GameStatusEntity;
+use Exception;
 
 /**
  * Аттрибуты:
@@ -19,7 +20,7 @@ class GameStatusModel extends AbstractModel
     /**
      * @param int $gameStatusNumber
      * @return GameStatusEntity
-     * @throws \Exception
+     * @throws Exception
      */
     public function getStatus(int $gameStatusNumber): AbstractEntity
     {

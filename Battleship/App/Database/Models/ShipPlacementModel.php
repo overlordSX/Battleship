@@ -9,6 +9,7 @@ use Battleship\App\Database\Entity\PlayerEntity;
 use Battleship\App\Database\Entity\ShipEntity;
 use Battleship\App\Database\Entity\ShipPlacementEntity;
 use Battleship\App\Helpers\ShipOrientationHelper;
+use Exception;
 use JetBrains\PhpStorm\ArrayShape;
 
 /**
@@ -32,7 +33,6 @@ class ShipPlacementModel extends AbstractModel
     protected string $tableName = 'ship_placement';
     protected string $entityClassName = ShipPlacementEntity::class;
 
-
     protected GameEntity $game;
     protected PlayerEntity $player;
     protected array $usedPlaces = [];
@@ -42,14 +42,15 @@ class ShipPlacementModel extends AbstractModel
 
     protected array $firedShots = [];
 
-    /** @throws \Exception */
+    /** @throws Exception */
     protected function setGame($gameId): void
     {
-        $gameModel = new GameModel();
-        $this->game = $gameModel->getGameById($gameId);
+        $gameModel = GameModel::getInstance();
+        $gameModel->setGame($gameId);
+        $this->game = $gameModel->getGame();
     }
 
-    /** @throws \Exception */
+    /** @throws Exception */
     protected function setPlayer($playerCode): void
     {
         $playerModel = new PlayerModel();
@@ -78,7 +79,7 @@ class ShipPlacementModel extends AbstractModel
         $this->gameFieldId = $gameFieldId;
     }
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function getShips(): array
     {
         if (!$this->placedShips) {
@@ -102,7 +103,7 @@ class ShipPlacementModel extends AbstractModel
         return $this->field;
     }
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function getFiredShots(): array
     {
         if (!$this->firedShots) {
@@ -125,7 +126,7 @@ class ShipPlacementModel extends AbstractModel
         $this->field = $field;
     }
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function makePlacement($gameId, $playerCode): array
     {
         $this->setGame($gameId);
@@ -187,7 +188,7 @@ class ShipPlacementModel extends AbstractModel
     }
 
 
-    /** @throws \Exception */
+    /** @throws Exception */
     #[ArrayShape(['success' => "bool"])]
     public function clearField($gameId, $playerCode): array
     {
@@ -208,7 +209,7 @@ class ShipPlacementModel extends AbstractModel
      * @param $gameFieldId
      * @param bool $forEnemy
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function fillFieldAndUsedPlaces($gameFieldId, bool $forEnemy = false): void
     {
@@ -220,7 +221,7 @@ class ShipPlacementModel extends AbstractModel
         }
     }
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function showOnField(ShipPlacementEntity $placedShip, bool $forEnemy = false)
     {
         $field = $this->getField();
@@ -279,7 +280,7 @@ class ShipPlacementModel extends AbstractModel
     /**
      * @param $gameFieldId
      * @return ShipPlacementEntity[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getPlacedShipsList($gameFieldId): array
     {
@@ -291,7 +292,7 @@ class ShipPlacementModel extends AbstractModel
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function isHereShip(int $x, int $y): bool
     {
@@ -303,7 +304,7 @@ class ShipPlacementModel extends AbstractModel
     /**
      * @param string $shipName
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function unsetShip(string $shipName): bool
     {
@@ -317,7 +318,7 @@ class ShipPlacementModel extends AbstractModel
      * @param array $ship
      * @param array|ShipPlacementEntity $placedShip
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     protected function placeShip(GameFieldEntity $gameField, array $ship, ShipPlacementEntity|array $placedShip): bool
     {
@@ -378,7 +379,7 @@ class ShipPlacementModel extends AbstractModel
      * @param int $coordinateX
      * @param int $coordinateY
      * @return ShipEntity
-     * @throws \Exception
+     * @throws Exception
      */
     public function getShip(int $coordinateX, int $coordinateY): AbstractEntity
     {

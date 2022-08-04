@@ -4,14 +4,15 @@ namespace Battleship\App\Validator\Rule;
 
 use Battleship\App\Database\Model\GameModel;
 use Battleship\App\Validator\RuleInterface;
+use Exception;
 
 class IsGameExist implements RuleInterface
 {
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function pass($value): bool
     {
-        $gameModel = new GameModel();
+        $gameModel = GameModel::getInstance();
         return (bool)$gameModel->query()
             ->where('id', '=', $value)
             ->fetchCount();

@@ -5,6 +5,7 @@ namespace Battleship\App\Validator\Rule;
 use Battleship\App\Database\Model\GameModel;
 use Battleship\App\Database\Model\GameStatusModel;
 use Battleship\App\Validator\RuleInterface;
+use Exception;
 
 class IsCorrectGameStatus implements RuleInterface
 {
@@ -12,19 +13,20 @@ class IsCorrectGameStatus implements RuleInterface
     {
     }
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function pass($value): bool
     {
         $gameId = $value['gameId'];
 
-        $gameModel = new GameModel();
-        $game = $gameModel->getGameById($gameId);
+        $gameModel = GameModel::getInstance();
+        $gameModel->setGame($gameId);
+        $game = $gameModel->getGame();
 
         return $game->getGameStatusId() === $this->gameStatus;
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function message(): string
     {

@@ -4,6 +4,7 @@ namespace Battleship\App\Database\Model;
 
 use Battleship\App\Database\Entity\AbstractEntity;
 use Battleship\App\Database\Entity\ShipEntity;
+use Exception;
 
 /**
  * Аттрибуты:
@@ -17,19 +18,19 @@ class ShipModel extends AbstractModel
     /** @var ShipEntity[] */
     protected array $allShips;
 
-    /** @throws \Exception */
-    private function __construct()
+    /** @throws Exception */
+    protected function __construct()
     {
         $this->allShips = $this->getAllShipsQuery();
     }
 
     public static function getInstance(): ShipModel
     {
-        if (null === self::$_instance) {
-            self::$_instance = new self;
+        if (null === static::$_instance) {
+            static::$_instance = new static();
         }
 
-        return self::$_instance;
+        return static::$_instance;
     }
 
     protected string $tableName = 'ship';
@@ -37,7 +38,7 @@ class ShipModel extends AbstractModel
 
     /**
      * @return ShipEntity[]
-     * @throws \Exception
+     * @throws Exception
      */
     protected function getAllShipsQuery(): array
     {
@@ -48,7 +49,7 @@ class ShipModel extends AbstractModel
     /**
      * @param $shipName
      * @return AbstractEntity|null
-     * @throws \Exception
+     * @throws Exception
      */
     public function getByName($shipName): ?AbstractEntity
     {
@@ -63,7 +64,7 @@ class ShipModel extends AbstractModel
     /**
      * @param $shipName
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function isShipExist($shipName): bool
     {

@@ -4,11 +4,12 @@ namespace Battleship\App\Validator\Rule;
 
 use Battleship\App\Database\Model\PlayerModel;
 use Battleship\App\Validator\RuleInterface;
+use Exception;
 
 class IsPlayerExist implements RuleInterface
 {
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function pass($value): bool
     {
         $playerModel = new PlayerModel();

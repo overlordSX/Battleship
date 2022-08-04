@@ -5,11 +5,12 @@ namespace Battleship\App\Validator\Rule;
 use Battleship\App\Database\Model\ShipPlacementModel;
 use Battleship\App\Helpers\PrepareFieldScope;
 use Battleship\App\Validator\RuleInterface;
+use Exception;
 
 class IsNoShipsIntersection implements RuleInterface
 {
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function pass($value): bool
     {
         $field = $value['field'];

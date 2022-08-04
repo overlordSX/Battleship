@@ -6,11 +6,12 @@ namespace Battleship\App\Controllers;
 use Battleship\App\Controllers\Util\JsonUtil;
 use Battleship\App\Database\Model\ShotModel;
 use Battleship\App\Validator\Request\MakeShotRequest;
+use Exception;
 
 class ShotController implements ControllerInterface
 {
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function makeShot(int $gameId, string $playerCode)
     {

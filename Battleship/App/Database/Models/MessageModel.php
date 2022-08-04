@@ -4,6 +4,7 @@ namespace Battleship\App\Database\Model;
 
 
 use Battleship\App\Database\Entity\MessageEntity;
+use Exception;
 
 /**
  * Аттрибуты:
@@ -25,7 +26,7 @@ class MessageModel extends AbstractModel
      * @param $gameId
      * @param $playerCode
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function postNewMessage($gameId, $playerCode): bool
     {
@@ -42,7 +43,7 @@ class MessageModel extends AbstractModel
         ]);
     }
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function getChatMessages($gameId, $playerCode): array
     {
         $playerModel = new PlayerModel();
@@ -78,7 +79,7 @@ class MessageModel extends AbstractModel
      * @param int $gameId
      * @param int $lastTime
      * @return MessageEntity[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getAllMessages(int $gameId, int $lastTime): array
     {
