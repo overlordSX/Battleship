@@ -14,6 +14,10 @@ use Battleship\App\Database\Entity\MessageEntity;
  */
 class MessageModel extends AbstractModel
 {
+    public const MESSAGE_MAX_LEN = 250;
+    protected const CHAT_MAX_MESSAGE_QUANTITY = 500;
+    protected const ZERO_LAST_TIME = 0;
+
     protected string $tableName = 'message';
     protected string $entityClassName = MessageEntity::class;
 
@@ -25,7 +29,7 @@ class MessageModel extends AbstractModel
      */
     public function postNewMessage($gameId, $playerCode): bool
     {
-        $content = htmlspecialchars(substr($_POST['message'], 0, 250), ENT_QUOTES);
+        $content = htmlspecialchars(substr($_POST['message'], 0, self::MESSAGE_MAX_LEN), ENT_QUOTES);
 
         $playerModel = new PlayerModel();
         $player = $playerModel->getPlayerByCode($playerCode);
@@ -44,7 +48,9 @@ class MessageModel extends AbstractModel
         $playerModel = new PlayerModel();
         $currentPlayer = $playerModel->getPlayerByCode($playerCode);
 
-        $lastTime = isset($_GET['lastTime']) && (bool)$_GET['lastTime'] !== false ? (int)$_GET['lastTime'] : 0;
+        $isLastTimeExistAndNotFalse = isset($_GET['lastTime']) && (bool)$_GET['lastTime'] !== false;
+
+        $lastTime = $isLastTimeExistAndNotFalse ? (int)$_GET['lastTime'] : self::ZERO_LAST_TIME;
 
         $allMes = $this->getAllMessages($gameId, $lastTime);
 
@@ -81,7 +87,7 @@ class MessageModel extends AbstractModel
             ->where('created_at', '>', $lastTime)
             ->select('player_id', 'created_at', 'content')
             ->orderBy('created_at', 'asc')
-            ->limit(500)
+            ->limit(self::CHAT_MAX_MESSAGE_QUANTITY)
             ->fetchAll();
     }
 }
