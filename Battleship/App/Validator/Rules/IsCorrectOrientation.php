@@ -2,6 +2,7 @@
 
 namespace Battleship\App\Validator\Rule;
 
+use Battleship\App\Database\Model\ShipPlacementModel;
 use Battleship\App\Validator\RuleInterface;
 
 class IsCorrectOrientation implements RuleInterface
@@ -9,9 +10,8 @@ class IsCorrectOrientation implements RuleInterface
 
     public function pass($value): bool
     {
-        $pattern = '/^(horizontal|vertical)$/';
-
-        return preg_match($pattern, $value);
+        return $value === ShipPlacementModel::HORIZONTAL_SHIP_ORIENTATION
+            || $value === ShipPlacementModel::VERTICAL_SHIP_ORIENTATION;
     }
 
     public function message(): string
