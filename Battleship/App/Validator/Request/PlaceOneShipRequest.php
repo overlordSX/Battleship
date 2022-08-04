@@ -19,9 +19,48 @@ use JetBrains\PhpStorm\ArrayShape;
 
 class PlaceOneShipRequest extends AbstractRequest
 {
-
     protected int $xSizeBound;
     protected int $ySizeBound;
+    protected int $gameId;
+    protected string $playerCode;
+    protected array $field;
+
+    /** @throws \Exception */
+    public function __construct(int $gameId, string $playerCode)
+    {
+        $this->gameId = $gameId;
+        $this->playerCode = $playerCode;
+
+        $game = (new GameModel())->getGameById($gameId);
+
+        $playerModel = new PlayerModel();
+        $player = $playerModel->getPlayerByCode($playerCode);
+
+        $gameField = (new GameFieldModel())->getByGameAndPlayer($game->getId(), $player->getId());
+
+        $shipPlacementModel = new ShipPlacementModel();
+        $shipPlacementModel->fillFieldAndUsedPlaces($gameField->getId());
+        $this->field = $shipPlacementModel->getField();
+    }
+
+    public function setShipToField(array $ship): void
+    {
+        $isHorizontal = ($ship['orientation'] === 'horizontal');
+        $shipSize = substr($ship['ship'], 0, 1);
+        $shipX = (int)$ship['x'];
+        $shipY = (int)$ship['y'];
+        $shipName = (string)$ship['ship'];
+
+        if ($isHorizontal) {
+            for ($i = 0; $i < $shipSize; $i++) {
+                $this->field[$shipX + $i][$shipY] = [$shipName, 0];
+            }
+        } else {
+            for ($i = 0; $i < $shipSize; $i++) {
+                $this->field[$shipX][$shipY + $i] = [$shipName, 0];
+            }
+        }
+    }
 
     /**
      * @throws \Exception
@@ -31,21 +70,11 @@ class PlaceOneShipRequest extends AbstractRequest
         'y' => "array",
         'shipName' => "array",
         'orientation' => "array",
-        'gameAndPlayerAndShip' => "array"
+        'fieldAndShip' => "array"
     ])]
     protected function prepareParams(array $params): array
     {
-        $gameId = $params['gameAndPlayer']['gameId'];
-        $playerCode = $params['gameAndPlayer']['playerCode'];
         $ship = $params['oneShip'];
-
-        $game = (new GameModel())->getGameById($gameId);
-        $playerModel = new PlayerModel();
-        $player = $playerModel->getPlayerByCode($playerCode);
-        $gameField = (new GameFieldModel())->getByGameAndPlayer($game->getId(), $player->getId());
-        $shipPlacementModel = new ShipPlacementModel();
-        $shipPlacementModel->fillFieldAndUsedPlaces($gameField->getId());
-        $field = $shipPlacementModel->getField();
 
         $isHorizontal = (string)$ship['orientation'] === 'horizontal';
         $this->xSizeBound = ShipPlacementModel::FIELD_SIZE + 1
@@ -57,7 +86,7 @@ class PlaceOneShipRequest extends AbstractRequest
         $preparedParams['y'] = (int)$ship['y'];
         $preparedParams['shipName'] = (string)$ship['ship'];
         $preparedParams['orientation'] = (string)$ship['orientation'];
-        $preparedParams['gameAndPlayerAndShip'] = ['field' => $field, 'ship' => $ship];
+        $preparedParams['fieldAndShip'] = ['field' => $this->field , 'ship' => $ship];
 
         return $preparedParams;
     }
@@ -67,7 +96,7 @@ class PlaceOneShipRequest extends AbstractRequest
         'y' => "array",
         'shipName' => "array",
         'orientation' => "array",
-        'gameAndPlayerAndShip' => "\Battleship\App\Validator\Rule\IsCorrectShipPlacement[]"
+        'fieldAndShip' => "\Battleship\App\Validator\Rule\IsCorrectShipPlacement[]"
     ])]
     protected function rules(): array
     {
@@ -76,23 +105,28 @@ class PlaceOneShipRequest extends AbstractRequest
                 new IfWasErrorsStop(),
                 new IsRequired('Координата X'),
                 new IsInt('Координата X'),
-                new IsInScope(0, $this->xSizeBound)],
+                new IsInScope(0, $this->xSizeBound)
+            ],
             'y' => [
                 new IfWasErrorsStop(),
                 new IsRequired('Координата Y'),
                 new IsInt('Координата Y'),
-                new IsInScope(0, $this->ySizeBound)],
+                new IsInScope(0, $this->ySizeBound)
+            ],
             'shipName' => [
                 new IfWasErrorsStop(),
                 new IsRequired('Название корабля'),
-                new IsString(), new IsShipExist()],
+                new IsString(), new IsShipExist()
+            ],
             'orientation' => [
                 new IfWasErrorsStop(),
                 new IsRequired('Ориентация корабля'),
-                new IsString(), new IsCorrectOrientation()],
-            'gameAndPlayerAndShip' => [
+                new IsString(), new IsCorrectOrientation()
+            ],
+            'fieldAndShip' => [
                 new IfWasErrorsStop(),
-                new IsNoShipsIntersection()]
+                new IsNoShipsIntersection()
+            ]
         ];
     }
 }
