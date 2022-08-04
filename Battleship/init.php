@@ -18,6 +18,10 @@ Autoloader::register('Battleship/App/Database/Entity/ShotEntity');
 
 Autoloader::register('Battleship/App/Database/Util/EntityUtil');
 
+Autoloader::register('Battleship/App/Helpers/PrepareFieldScope');
+Autoloader::register('Battleship/App/Helpers/PrepareShipSize');
+Autoloader::register('Battleship/App/Helpers/ShipOrientationHelper');
+
 Autoloader::register('Battleship/App/Database/Models/AbstractModel');
 Autoloader::register('Battleship/App/Database/Models/PlayerModel');
 Autoloader::register('Battleship/App/Database/Models/GameStatusModel');
@@ -33,7 +37,7 @@ Autoloader::register('Battleship/App/Validator/Rules/IsGameExist');
 Autoloader::register('Battleship/App/Validator/Rules/IsPlayerExist');
 Autoloader::register('Battleship/App/Validator/Rules/IsPosInt');
 Autoloader::register('Battleship/App/Validator/Rules/IsGameWithPlayerExist');
-Autoloader::register('Battleship/App/Validator/Rules/IsString');
+Autoloader::register('Battleship/App/Validator/Rules/IsStringRequired');
 Autoloader::register('Battleship/App/Validator/Rules/IsCorrectLastTime');
 Autoloader::register('Battleship/App/Validator/Rules/IsRequired');
 Autoloader::register('Battleship/App/Validator/Rules/IsCorrectGameStatus');
