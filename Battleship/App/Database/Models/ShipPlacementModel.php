@@ -8,6 +8,7 @@ use Battleship\App\Database\Entity\GameFieldEntity;
 use Battleship\App\Database\Entity\PlayerEntity;
 use Battleship\App\Database\Entity\ShipEntity;
 use Battleship\App\Database\Entity\ShipPlacementEntity;
+use Battleship\App\Helpers\ShipOrientationHelper;
 use JetBrains\PhpStorm\ArrayShape;
 
 /**
@@ -22,8 +23,11 @@ class ShipPlacementModel extends AbstractModel
 {
 
     public const EMPTY_CELL_NAME = 'empty';
-    public const FIELD_SIZE = 9;
+    public const FIELD_EDGE_COORDINATE = 9;
+    public const FIELD_SIZE = 10;
     public const SHIPS_ON_FIELD = 10;
+    public const HORIZONTAL_SHIP_ORIENTATION = 'horizontal';
+    public const VERTICAL_SHIP_ORIENTATION = 'vertical';
 
     protected string $tableName = 'ship_placement';
     protected string $entityClassName = ShipPlacementEntity::class;
@@ -148,7 +152,7 @@ class ShipPlacementModel extends AbstractModel
             $shipsQue = [[
                 'x' => $_POST['x'],
                 'y' => $_POST['y'],
-                'ship' => substr($_POST['ship'], 0, 3),
+                'ship' => $_POST['ship'],
                 'orientation' => $_POST['orientation']
             ]];
         }
@@ -251,7 +255,7 @@ class ShipPlacementModel extends AbstractModel
 
         foreach ($firedShots as $x => $yVal) {
             foreach ($yVal as $y => $value) {
-                    $field[$x][$y][1] = $value;
+                $field[$x][$y][1] = $value;
             }
         }
 
@@ -266,7 +270,9 @@ class ShipPlacementModel extends AbstractModel
      */
     protected function getEmptyPlacementArray(): array
     {
-        return array_fill(0, 10, array_fill(0, 10, [self::EMPTY_CELL_NAME, 0]));
+        return array_fill(0, self::FIELD_SIZE, array_fill(
+            0, self::FIELD_SIZE, [self::EMPTY_CELL_NAME, ShotModel::WAS_NO_SHOT]
+        ));
     }
 
 
@@ -301,8 +307,7 @@ class ShipPlacementModel extends AbstractModel
      */
     public function unsetShip(string $shipName): bool
     {
-        $shipName = substr($shipName, 0, 3);
-        $shipModel = new ShipModel();
+        $shipModel = ShipModel::getInstance();
         $ship = $shipModel->getByName($shipName);
         return $this->delete('ship_id', '=', $ship->getId());
     }
@@ -321,13 +326,10 @@ class ShipPlacementModel extends AbstractModel
 
         $shipName = $ship['ship'];
 
-        //c фронта бывало приходила запятая после названия корабля
-        $shipName = substr($shipName, 0, 3);
+        $isHorizontal = ShipOrientationHelper::isHorizontalFromString($ship['orientation']);
+        $oldOrientation = !$isHorizontal;
 
-        $orientation = ($ship['orientation'] === 'horizontal');
-        $oldOrientation = !$orientation;
-
-        $shipModel = new ShipModel();
+        $shipModel = ShipModel::getInstance();
         $currentShip = $shipModel->getByName($shipName);
 
         if (empty($placedShip)) {
@@ -335,7 +337,7 @@ class ShipPlacementModel extends AbstractModel
                 ->insert([
                     'coordinate_x' => $coordinateX,
                     'coordinate_y' => $coordinateY,
-                    'orientation' => $orientation,
+                    'orientation' => $isHorizontal,
                     'ship_id' => $currentShip->getId(),
                     'game_field_id' => $gameField->getId()
                 ]);
@@ -348,7 +350,7 @@ class ShipPlacementModel extends AbstractModel
                         ['game_field_id' => ['=' => $gameField->getId()]],
                         ['ship_id' => ['=' => $currentShip->getId()]]
                     ],
-                    [['orientation' => $orientation]]
+                    [['orientation' => $isHorizontal]]
                 );
         }
 
@@ -383,7 +385,6 @@ class ShipPlacementModel extends AbstractModel
         $field = $this->getField();
         $shipName = $field[$coordinateX][$coordinateY][0];
 
-        $shipModel = new ShipModel();
-        return $shipModel->getByName($shipName);
+        return ShipModel::getInstance()->getByName($shipName);
     }
 }
