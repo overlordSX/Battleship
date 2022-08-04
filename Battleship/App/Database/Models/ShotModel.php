@@ -4,11 +4,13 @@ namespace Battleship\App\Database\Model;
 
 use Battleship\App\Database\Entity\ShipPlacementEntity;
 use Battleship\App\Database\Entity\ShotEntity;
+use Battleship\App\Helpers\PrepareFieldScope;
 
 class ShotModel extends AbstractModel
 {
 
-    public const SHOT_DOWN = 1;
+    public const WAS_SHOT = 1;
+    public const WAS_NO_SHOT = 0;
     protected string $tableName = 'shot';
     protected string $entityClassName = ShotEntity::class;
 
@@ -25,12 +27,13 @@ class ShotModel extends AbstractModel
             ->select('id', 'coordinate_x', 'coordinate_y')
             ->fetchAll();
 
-        $shotField = array_fill(0, 10, array_fill(0, 10, 0));
+        $shotField = array_fill(0, ShipPlacementModel::FIELD_SIZE, array_fill(
+            0, ShipPlacementModel::FIELD_SIZE, self::WAS_NO_SHOT));
 
         foreach ($shots as $shot) {
             $x = $shot->getCoordinateX();
             $y = $shot->getCoordinateY();
-            $shotField[$x][$y] = 1;
+            $shotField[$x][$y] = self::WAS_SHOT;
         }
 
         return $shotField;
@@ -127,7 +130,7 @@ class ShotModel extends AbstractModel
         if ($isHorizontal) {
             for ($i = 0; $i < $shipSize; $i++) {
                 $cell = $enemyField[$firstX + $i][$firstY];
-                if ($cell[1] !== self::SHOT_DOWN) {
+                if ($cell[1] !== self::WAS_SHOT) {
                     return $shotPartsCount;
                 }
                 $shotPartsCount++;
@@ -135,7 +138,7 @@ class ShotModel extends AbstractModel
         } else {
             for ($i = 0; $i < $shipSize; $i++) {
                 $cell = $enemyField[$firstX][$firstY + $i];
-                if ($cell[1] !== self::SHOT_DOWN) {
+                if ($cell[1] !== self::WAS_SHOT) {
                     return $shotPartsCount;
                 }
                 $shotPartsCount++;
@@ -159,33 +162,16 @@ class ShotModel extends AbstractModel
         $shipX = $ship->getCoordinateX();
         $shipY = $ship->getCoordinateY();
 
-        $startX = $shipX;
-        $startY = $shipY;
+        $fieldScope = PrepareFieldScope::prepare($shipX,$shipY,$isHorizontal,$shipSize);
 
-        if ($startX > 0) {
-            $startX -= 1;
-        }
-
-        if ($startY > 0) {
-            $startY -= 1;
-        }
-
-        $width = $isHorizontal ? $shipSize : 1;
-        $height = $isHorizontal ? 1 : $shipSize;
-
-        $endX = $shipX + $width;
-        $endY = $shipY + $height;
-        if ($endX > ShipPlacementModel::FIELD_SIZE) {
-            $endX = ShipPlacementModel::FIELD_SIZE;
-        }
-
-        if ($endY > ShipPlacementModel::FIELD_SIZE) {
-            $endY = ShipPlacementModel::FIELD_SIZE;
-        }
+        $startX = $fieldScope['startX'];
+        $endX = $fieldScope['endX'];
+        $startY = $fieldScope['startY'];
+        $endY = $fieldScope['endY'];
 
         for ($x = $startX; $x <= $endX; $x++) {
             for ($y = $startY; $y <= $endY; $y++) {
-                if ($field[$x][$y][1] !== self::SHOT_DOWN) {
+                if ($field[$x][$y][1] !== self::WAS_SHOT) {
                     if (!$this->realize($x, $y, $gameFieldId)) {
                         return false;
                     }
