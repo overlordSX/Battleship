@@ -62,13 +62,13 @@ class MakeShotRequest extends BaseRequest
             new IfWasErrorsStop(),
             new IsRequired('Координата X'),
             new IsInt('Координата X'),
-            new IsInScope(0, ShipPlacementModel::FIELD_SIZE)
+            new IsInScope(0, ShipPlacementModel::FIELD_EDGE_COORDINATE)
         ];
         $preparedRules['y'] = [
             new IfWasErrorsStop(),
             new IsRequired('Координата Y'),
             new IsInt('Координата Y'),
-            new IsInScope(0, ShipPlacementModel::FIELD_SIZE)
+            new IsInScope(0, ShipPlacementModel::FIELD_EDGE_COORDINATE)
         ];
         $preparedRules['GameAndPlayerAndXY'] = [
             new IfWasErrorsStop(),
