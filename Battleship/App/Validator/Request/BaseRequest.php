@@ -7,7 +7,7 @@ use Battleship\App\Validator\Rule\IsGameExist;
 use Battleship\App\Validator\Rule\IsGameWithPlayerExist;
 use Battleship\App\Validator\Rule\IsPlayerExist;
 use Battleship\App\Validator\Rule\IsPosInt;
-use Battleship\App\Validator\Rule\IsString;
+use Battleship\App\Validator\Rule\IsStringRequired;
 use JetBrains\PhpStorm\ArrayShape;
 
 /**
@@ -40,9 +40,19 @@ class BaseRequest extends AbstractRequest
     protected function rules(): array
     {
         return [
-            'gameId' => [new IsPosInt(), new IsGameExist()],
-            'playerCode' => [new IfWasErrorsStop(), new IsString(), new IsPlayerExist()],
-            'gameAndPlayer' => [new IfWasErrorsStop(), new IsGameWithPlayerExist()]
+            'gameId' => [
+                new IsPosInt(),
+                new IsGameExist()
+            ],
+            'playerCode' => [
+                new IfWasErrorsStop(),
+                new IsStringRequired(),
+                new IsPlayerExist()
+            ],
+            'gameAndPlayer' => [
+                new IfWasErrorsStop(),
+                new IsGameWithPlayerExist()
+            ]
         ];
     }
 }
