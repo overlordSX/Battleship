@@ -20,10 +20,7 @@ class IsCorrectGameStatus implements RuleInterface
         $gameModel = new GameModel();
         $game = $gameModel->getGameById($gameId);
 
-        if ($game->getGameStatusId() !== $this->gameStatus) {
-            return false;
-        }
-        return true;
+        return $game->getGameStatusId() === $this->gameStatus;
     }
 
     /**
