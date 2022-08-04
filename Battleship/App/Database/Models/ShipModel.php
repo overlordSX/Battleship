@@ -12,20 +12,52 @@ use Battleship\App\Database\Entity\ShipEntity;
  */
 class ShipModel extends AbstractModel
 {
+    protected static ?ShipModel $_instance = null;
+
+    /** @var ShipEntity[] */
+    protected array $allShips;
+
+    /** @throws \Exception */
+    private function __construct()
+    {
+        $this->allShips = $this->getAllShipsQuery();
+    }
+
+    public static function getInstance(): ShipModel
+    {
+        if (null === self::$_instance) {
+            self::$_instance = new self;
+        }
+
+        return self::$_instance;
+    }
+
     protected string $tableName = 'ship';
     protected string $entityClassName = ShipEntity::class;
 
     /**
-     * @param $name
-     * @return ShipEntity
+     * @return ShipEntity[]
      * @throws \Exception
      */
-    public function getByName($name): AbstractEntity
+    protected function getAllShipsQuery(): array
     {
-        return $this
-            ->query()
-            ->where('name', '=', $name)
-            ->fetch();
+        return $this->query()
+            ->fetchAll();
+    }
+
+    /**
+     * @param $shipName
+     * @return AbstractEntity|null
+     * @throws \Exception
+     */
+    public function getByName($shipName): ?AbstractEntity
+    {
+        foreach (self::getInstance()->allShips as $ship) {
+            if ($ship->getName() === $shipName) {
+                return $ship;
+            }
+        }
+        return null;
     }
 
     /**
@@ -35,8 +67,6 @@ class ShipModel extends AbstractModel
      */
     public function isShipExist($shipName): bool
     {
-        return (bool)$this->query()
-            ->where('name', '=', $shipName)
-            ->fetchCount();
+        return (bool) $this->getByName($shipName);
     }
 }
