@@ -4,7 +4,7 @@ namespace Battleship\App\Validator\Request;
 
 use Battleship\App\Validator\Rule\IfWasErrorsStop;
 use Battleship\App\Validator\Rule\IsRequired;
-use Battleship\App\Validator\Rule\IsString;
+use Battleship\App\Validator\Rule\IsStringRequired;
 use JetBrains\PhpStorm\ArrayShape;
 
 class SendMessageRequest extends BaseRequest
@@ -37,7 +37,7 @@ class SendMessageRequest extends BaseRequest
         $preparedRules['message'] = [
             new IfWasErrorsStop(),
             new IsRequired('Текст сообщения'),
-            new IsString()
+            new IsStringRequired()
         ];
         return $preparedRules;
     }
