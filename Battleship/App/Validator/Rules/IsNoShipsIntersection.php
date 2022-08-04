@@ -3,6 +3,7 @@
 namespace Battleship\App\Validator\Rule;
 
 use Battleship\App\Database\Model\ShipPlacementModel;
+use Battleship\App\Helpers\PrepareFieldScope;
 use Battleship\App\Validator\RuleInterface;
 
 class IsNoShipsIntersection implements RuleInterface
@@ -11,38 +12,20 @@ class IsNoShipsIntersection implements RuleInterface
     /** @throws \Exception */
     public function pass($value): bool
     {
-        extract($value);
+        $field = $value['field'];
 
-        $isHorizontal = ($ship['orientation'] === 'horizontal');
-        $shipSize = substr($ship['ship'], 0, 1);
-        $shipX = (int)$ship['x'];
-        $shipY = (int)$ship['y'];
-        $shipName = (string)$ship['ship'];
+        $isHorizontal = $value['isHorizontal'];
+        $shipSize = $value['shipSize'];
+        $shipName = $value['shipName'];
+        $shipX = $value['shipX'];
+        $shipY = $value['shipY'];
 
-        $startX = $shipX;
-        $startY = $shipY;
+        $fieldScope = PrepareFieldScope::prepare($shipX, $shipY, $isHorizontal, $shipSize);
 
-        if ($startX > 0) {
-            $startX -= 1;
-        }
-
-        if ($startY > 0) {
-            $startY -= 1;
-        }
-
-        $width = $isHorizontal ? $shipSize : 1;
-        $height = $isHorizontal ? 1 : $shipSize;
-
-        $endX = $shipX + $width;
-        $endY = $shipY + $height;
-
-        if ($endX > ShipPlacementModel::FIELD_SIZE) {
-            $endX = ShipPlacementModel::FIELD_SIZE;
-        }
-
-        if ($endY > ShipPlacementModel::FIELD_SIZE) {
-            $endY = ShipPlacementModel::FIELD_SIZE;
-        }
+        $startX = $fieldScope['startX'];
+        $endX = $fieldScope['endX'];
+        $startY = $fieldScope['startY'];
+        $endY = $fieldScope['endY'];
 
         for ($x = $startX; $x <= $endX; $x++) {
             for ($y = $startY; $y <= $endY; $y++) {
